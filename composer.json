@@ -1,0 +1,9 @@
+{
+    "name": "koki/php-practice_advanced",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {}
+}

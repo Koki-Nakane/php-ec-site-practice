@@ -1,0 +1,39 @@
+services:
+  # PHP+Apache用のappサービス（これは変更なし）
+  app:
+    build: .
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+
+  # ★★★ ここから下を追記 ★★★
+  # データベース用のdbサービス
+  db:
+    # MariaDBの公式イメージを使用（MySQLとほぼ互換性があり、軽量）
+    image: mariadb:10.6
+    
+    # コンテナを再起動したときにデータが消えないように、ボリュームを設定
+    volumes:
+      - db-data:/var/lib/mysql
+      
+    # 環境変数を設定
+    environment:
+      # データベースのrootユーザーのパスワード
+      MYSQL_ROOT_PASSWORD: root_password 
+      # 作成するデータベースの名前
+      MYSQL_DATABASE: php_advanced_db
+      # 作成する一般ユーザーの名前
+      MYSQL_USER: user
+      # 作成した一般ユーザーのパスワード
+      MYSQL_PASSWORD: user_password
+      
+    # ポートのマッピング（任意）
+    # ホストPCから直接DBに接続したい場合（例: DBクライアントツールを使う）に設定
+    ports:
+      - "3306:3306"
+
+# ★★★ 一番下にこれを追記 ★★★
+# 名前付きボリュームの定義
+volumes:
+  db-data:
