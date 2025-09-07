@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use App\Model\User;
-use App\Model\Cart;
 use DateTime;
 
 final class Order
@@ -33,7 +31,7 @@ final class Order
     {
         return $this->id;
     }
-    
+
     public function setId(int $id): void
     {
         $this->id = $id;
@@ -43,7 +41,7 @@ final class Order
     {
         return $this->user;
     }
-    
+
     public function getCartItems(): array
     {
         return $this->cartItems;

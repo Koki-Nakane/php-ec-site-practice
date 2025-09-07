@@ -24,7 +24,7 @@ final class AuthController
             return false;
         }
 
-        if (password_verify($password, $user->getHashedPassword()) ) {
+        if (password_verify($password, $user->getHashedPassword())) {
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user->getId();
             return true;
@@ -38,4 +38,3 @@ final class AuthController
         return isset($_SESSION['user_id']);
     }
 }
-

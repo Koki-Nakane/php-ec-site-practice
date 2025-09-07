@@ -7,7 +7,6 @@ namespace App\Traits;
 use DateTime;
 
 trait Logger
-
 {
     public function log(string $message): void
     {

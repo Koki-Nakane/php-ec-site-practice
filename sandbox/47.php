@@ -1,0 +1,6 @@
+<?php
+
+declare(strict_types=1);
+/* 47. ユニットテストの作成 (PHPUnit):
+Cart クラスの addItem メソッドや getTotalPrice メソッドに対して、PHPUnitを使ったユニットテストを作成してください。正常系と、在庫不足などの異常系の両方のテストケースを書いてみましょう。
+*/

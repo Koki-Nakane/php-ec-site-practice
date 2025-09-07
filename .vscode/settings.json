@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "db",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "php-ec-site-practice",
+            "database": "php-ec-site-practice_db",
+            "username": "user"
+        }
+    ]
+}

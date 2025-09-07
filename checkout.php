@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 use App\Controller\AuthController;
 use App\Mapper\UserMapper;
-use App\Model\Database;
 use App\Model\Cart;
+use App\Model\Database;
 
 require_once __DIR__ . '/vendor/autoload.php';
 session_start();

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Mapper\ProductMapper;
 use App\Model\Cart;
 use App\Model\Database;
-use App\Mapper\ProductMapper;
 
 require_once __DIR__ . '/vendor/autoload.php';
 session_start();

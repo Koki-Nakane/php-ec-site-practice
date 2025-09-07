@@ -15,7 +15,7 @@ try {
     $products = $productMapper->findAll();
 
 } catch (PDOException $e) {
-    echo "データベース接続エラー: " . $e->getMessage();
+    echo 'データベース接続エラー: ' . $e->getMessage();
     die();
 }
 

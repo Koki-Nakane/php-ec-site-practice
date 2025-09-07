@@ -4,48 +4,46 @@ declare(strict_types=1);
 
 namespace App\Mapper;
 
-use App\Model\Database;
 use App\Model\User;
-use PDO;
 use App\Traits\Logger;
+use PDO;
 
 final class UserMapper
 {
     use Logger;
-    
+
     private PDO $pdo;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
-    
 
     public function find(int $id): ?User
     {
-        $sql = "SELECT * FROM users WHERE id = ?";
+        $sql = 'SELECT * FROM users WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
-        if (!$row){
+        if (!$row) {
             return null;
         }
-        
+
         return User::createFromDbRow($row);
     }
 
     public function findByEmail(string $email): ?User
     {
-        $sql = "SELECT * FROM users WHERE email = ?";
+        $sql = 'SELECT * FROM users WHERE email = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$email]);
         $row = $stmt->fetch();
 
-        if (!$row){
+        if (!$row) {
             return null;
         }
-        
+
         return User::createFromDbRow($row);
     }
 
@@ -61,7 +59,7 @@ final class UserMapper
 
     private function insert(User $user): void
     {
-        $sql = "INSERT INTO users (name, email, password, address) VALUES (:name, :email, :password, :address)";
+        $sql = 'INSERT INTO users (name, email, password, address) VALUES (:name, :email, :password, :address)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':name' => $user->getName(),
@@ -78,7 +76,7 @@ final class UserMapper
 
     private function update(User $user): void
     {
-        $sql = "UPDATE users SET name = :name, email = :email, password = :password, address = :address WHERE id = :id";
+        $sql = 'UPDATE users SET name = :name, email = :email, password = :password, address = :address WHERE id = :id';
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -95,7 +93,7 @@ final class UserMapper
 
     public function delete(User $user): void
     {
-        $sql = "DELETE FROM users WHERE id = ?";
+        $sql = 'DELETE FROM users WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$user->getId()]);
 

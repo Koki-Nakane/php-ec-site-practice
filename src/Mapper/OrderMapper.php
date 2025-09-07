@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mapper;
 
-use PDO;
 use App\Model\Order;
-use App\Model\Product;
-use App\Mapper\ProductMapper;
+use PDO;
 
 final class OrderMapper
 {
@@ -20,8 +18,10 @@ final class OrderMapper
     public function save(Order $order): void
     {
         try {
+            $this->pdo->beginTransaction();
+
             // ordersテーブルへの処理
-            $sqlOrders = "INSERT INTO orders (user_id, total_price) VALUES (?, ?)";
+            $sqlOrders = 'INSERT INTO orders (user_id, total_price) VALUES (?, ?)';
             $stmtOrders = $this->pdo->prepare($sqlOrders);
             $userId = $order->getUser()->getId();
             $totalPrice = $order->getTotalPrice();
@@ -29,8 +29,7 @@ final class OrderMapper
             $orderId = $this->pdo->lastInsertId();
             $order->setId((int)$orderId);
 
-
-            $sqlItems = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+            $sqlItems = 'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)';
             $stmtItems = $this->pdo->prepare($sqlItems);
 
             foreach ($order->getCartItems() as $item) {
@@ -43,7 +42,11 @@ final class OrderMapper
                     $product->getPrice()
                 ]);
             }
+
+            $this->pdo->commit();
         } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+
             throw $e;
         }
     }

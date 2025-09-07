@@ -12,11 +12,11 @@
 declare(strict_types=1);
 
 use App\Controller\AuthController;
-use App\Mapper\ProductMapper;
 use App\Mapper\OrderMapper;
+use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
-use App\Model\Database;
 use App\Model\Cart;
+use App\Model\Database;
 use App\Model\Order;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -48,6 +48,8 @@ if (empty($cart->getItems())) {
     exit;
 }
 
+$pdo->beginTransaction();
+
 // 4. ★★★ Orderオブジェクトの生成 ★★★
 //    現在のユーザーとカートの情報を元に、新しい注文を作成する
 try {
@@ -62,18 +64,30 @@ try {
 
     $orderMapper = new OrderMapper($pdo, $productMapper);
     $orderMapper->save($order); // DBに注文を保存
-    
+
+    // Orderオブジェクトのカートアイテムをforeachでループさせ、新しく作ったProductMapperの在庫更新メソッドを、商品ごとに呼び出す！
+    foreach ($order->getCartItems() as $item) {
+        $productMapper->decreaseStock($item['product']->getId(), $item['quantity']);
+    }
+
     // 注文が完了したので、カートを空にする
     unset($_SESSION['cart']);
-    
+
     // 生成したOrderオブジェクトをセッションに一時的に保存し、
     // サンクスページで注文内容を表示できるようにする
     $_SESSION['latest_order'] = $order;
-    
+
+    $pdo->commit();
 } catch (Exception $e) {
-    // エラー処理
+    // 1. まず、データベースの状態を元に戻す
+    $pdo->rollBack();
+
+    // 2. ユーザーに表示するためのエラーメッセージをセッションに保存する
+    //    こうすることで、リダイレクト先のページでこのメッセージを表示できる
     $_SESSION['error_message'] = '注文処理中にエラーが発生しました: ' . $e->getMessage();
-    header('Location: /checkout.php'); // エラーがあれば確認ページに戻す
+
+    // 3. ユーザーを安全な場所（注文確認ページ）に戻す
+    header('Location: /checkout.php');
     exit;
 }
 

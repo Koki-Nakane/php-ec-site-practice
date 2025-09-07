@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Mapper\ProductMapper;
-use App\Model\Product;
 use App\Model\Database;
 
 require_once __DIR__ . '/../vendor/autoload.php';

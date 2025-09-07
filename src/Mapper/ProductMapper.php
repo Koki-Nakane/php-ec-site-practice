@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mapper;
 
-use App\Model\Database;
 use App\Model\Product;
 use PDO;
 
@@ -19,27 +18,27 @@ final class ProductMapper
 
     public function find(int $id): ?Product
     {
-        $sql = "SELECT * FROM products WHERE id = ?";
+        $sql = 'SELECT * FROM products WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
-        if (!$row){
+        if (!$row) {
             return null;
         }
-        
+
         return new Product(
-            (int)$row['id'],
             $row['name'],
             (float)$row['price'],
             $row['description'],
-            (int)$row['stock']
+            (int)$row['stock'],
+            (int)$row['id']
         );
     }
 
     public function findAll(): array
     {
-        $sql = "SELECT * FROM products";
+        $sql = 'SELECT * FROM products';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll();
@@ -48,11 +47,11 @@ final class ProductMapper
 
         foreach ($rows as $row) {
             $products[] = new Product(
-                (int)$row['id'],
                 $row['name'],
                 (float)$row['price'],
                 $row['description'],
-                (int)$row['stock']
+                (int)$row['stock'],
+                (int)$row['id']
             );
         }
         return $products;
@@ -60,7 +59,7 @@ final class ProductMapper
 
     public function save(Product $product): void
     {
-        if ($product->getId() === null || $product->getId() === 0) {
+        if ($product->getId() === null) {
             $this->insert($product);
         } else {
             $this->update($product);
@@ -69,7 +68,7 @@ final class ProductMapper
 
     private function insert(Product $product): void
     {
-        $sql = "INSERT INTO products (name, price, description, stock) VALUES (:name, :price, :description, :stock)";
+        $sql = 'INSERT INTO products (name, price, description, stock) VALUES (:name, :price, :description, :stock)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':name' => $product->getName(),
@@ -84,7 +83,7 @@ final class ProductMapper
 
     private function update(Product $product): void
     {
-        $sql = "UPDATE products SET name = :name, price = :price, description = :description, stock = :stock WHERE id = :id";
+        $sql = 'UPDATE products SET name = :name, price = :price, description = :description, stock = :stock WHERE id = :id';
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -99,14 +98,14 @@ final class ProductMapper
 
     public function delete(Product $product): void
     {
-        $sql = "DELETE FROM products WHERE id = ?";
+        $sql = 'DELETE FROM products WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$product->getId()]);
     }
 
     public function decreaseStock(int $productId, int $quantity): void
     {
-        $sql = "UPDATE products SET stock = stock - ? WHERE id = ?";
+        $sql = 'UPDATE products SET stock = stock - ? WHERE id = ?';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$quantity, $productId]);
     }

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use PDOException;
 use PDO;
+use PDOException;
 
-final class Database {
+final class Database
+{
     private static $instance = null;
     private $connection;
 
-    private function __construct() {
-        $dsn = "mysql:host=db;dbname=php_advanced_db";
-        $username = "user";
-        $password = "user_password";
+    private function __construct()
+    {
+        $dsn = 'mysql:host=db;dbname=php_advanced_db';
+        $username = 'user';
+        $password = 'user_password';
 
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -29,25 +31,26 @@ final class Database {
         }
     }
 
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (self::$instance === null) {
             self::$instance = new Database();
         }
         return self::$instance;
     }
 
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->connection;
     }
 
-
     public function __clone(): void
     {
-        throw new \Exception("Cannot clone a singleton.");
+        throw new \Exception('Cannot clone a singleton.');
     }
 
     public function __wakeup(): void
     {
-        throw new \Exception("Cannot unserialize a singleton.");
+        throw new \Exception('Cannot unserialize a singleton.');
     }
 }

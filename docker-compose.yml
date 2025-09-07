@@ -22,7 +22,7 @@ services:
       # データベースのrootユーザーのパスワード
       MYSQL_ROOT_PASSWORD: root_password 
       # 作成するデータベースの名前
-      MYSQL_DATABASE: php_advanced_db
+      MYSQL_DATABASE: php-ec-site-practice_db
       # 作成する一般ユーザーの名前
       MYSQL_USER: user
       # 作成した一般ユーザーのパスワード

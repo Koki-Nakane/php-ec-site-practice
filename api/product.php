@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Mapper\ProductMapper;
-use App\Model\Product;
 use App\Model\Database;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -17,12 +16,11 @@ $productMapper = new ProductMapper($pdo);
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
 if ($id === null || $id === false || $id <= 0) {
-    http_response_code(400); 
+    http_response_code(400);
     $error = ['error' => 'Invalid or missing ID parameter'];
     echo json_encode($error);
     exit;
 }
-
 
 $product = $productMapper->find($id);
 

@@ -4,30 +4,36 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use InvalidArgumentException;
 use Exception;
+use InvalidArgumentException;
 
 final class Product
 {
-    private function validateNotNegative(int|float $value, $name): void
-    {
-        if ($value < 0) {
-                throw new InvalidArgumentException("{$name}には0以上の値を指定してください。");
-            }
-    }
+    private ?int $id;
+    private string $name;
+    private float $price;
+    private string $description;
+    private int $stock;
 
     public function __construct(
-        private int $id,
-        private string $name,
-        private float $price,
-        private string $description,
-        private int $stock
+        string $name,
+        float $price,
+        string $description,
+        int $stock,
+        ?int $id = null
     ) {
-        $this->validateNotNegative($this->price, '価格');
-        $this->validateNotNegative($this->stock, '在庫数');
+        $this->validateNotNegative($price, '価格');
+        $this->validateNotNegative($stock, '在庫数');
+
+        $this->name = $name;
+        $this->price = $price;
+        $this->description = $description;
+        $this->stock = $stock;
+
+        $this->id = $id;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -54,7 +60,11 @@ final class Product
 
     public function setId(int $id): void
     {
-        if ($this->id !== 0) {
+        if ($this->id !== null) {
+            throw new Exception();
+        }
+
+        if ($id <= 0) {
             throw new Exception();
         }
 
@@ -82,5 +92,12 @@ final class Product
             'description' => $this->description,
             'stock' => $this->stock,
         ];
+    }
+
+    private function validateNotNegative(int|float $value, string $name): void
+    {
+        if ($value < 0) {
+            throw new InvalidArgumentException("{$name}には0以上の値を指定してください。");
+        }
     }
 }
