@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controller\AuthController;
+use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Http\Request;
@@ -28,10 +29,12 @@ $auth = $container->get(AuthController::class);
 $home = $container->get(HomeController::class);
 /** @var OrderController $order */
 $order = $container->get(OrderController::class);
+/** @var CartController $cart */
+$cart = $container->get(CartController::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
-$routes = $routesFactory($home, $order);
+$routes = $routesFactory($home, $order, $cart, $auth);
 
 // ルート解決
 $route = null;
@@ -61,10 +64,10 @@ $pipeline->pipe(new LoggingMiddleware());
 
 // 認証が必要な場合
 if ($tag === 'web:auth') {
-    $pipeline->pipe(new AuthMiddleware($auth, '/login.php', false));
+    $pipeline->pipe(new AuthMiddleware($auth, '/login', false));
 }
 if ($tag === 'api:auth') {
-    $pipeline->pipe(new AuthMiddleware($auth, '/login.php', true));
+    $pipeline->pipe(new AuthMiddleware($auth, '/login', true));
 }
 
 $response = $pipeline->process($request, $handler);

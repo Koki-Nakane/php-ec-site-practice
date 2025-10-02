@@ -40,7 +40,7 @@ final class HomeController
                             <p>価格: <?php echo htmlspecialchars((string)$product->getPrice(), ENT_QUOTES, 'UTF-8'); ?>円</p>
                             <p>在庫: <?php echo htmlspecialchars((string)$product->getStock(), ENT_QUOTES, 'UTF-8'); ?>個</p>
                             <p><?php echo nl2br(htmlspecialchars($product->getDescription(), ENT_QUOTES, 'UTF-8')); ?></p>
-                            <form action="/add_to_cart.php" method="post">
+                            <form action="/add_to_cart" method="post">
                                 <input type="hidden" name="product_id" value="<?php echo $product->getId(); ?>">
                                 <label for="quantity-<?php echo $product->getId(); ?>">数量:</label>
                                 <input type="number" id="quantity-<?php echo $product->getId(); ?>" name="quantity" value="1" min="1">

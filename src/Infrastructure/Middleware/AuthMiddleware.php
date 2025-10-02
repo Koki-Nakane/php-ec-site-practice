@@ -13,7 +13,7 @@ final class AuthMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private AuthController $auth,
-        private string $loginPath = '/login.php',
+    private string $loginPath = '/login',
         private bool $apiMode = false,
     ) {
     }

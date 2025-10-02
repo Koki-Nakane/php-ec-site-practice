@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Contracts\ContainerInterface;
 use App\Contracts\EventDispatcherInterface;
 use App\Controller\AuthController;
+use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Infrastructure\Container;
@@ -54,6 +55,12 @@ $container->set(OrderController::class, function (ContainerInterface $c): OrderC
     return new OrderController(
         $c->get(PDO::class),
         $c->get(UserMapper::class),
+        $c->get(ProductMapper::class)
+    );
+}, shared: true);
+
+$container->set(CartController::class, function (ContainerInterface $c): CartController {
+    return new CartController(
         $c->get(ProductMapper::class)
     );
 }, shared: true);
