@@ -51,4 +51,9 @@ final class Order
     {
         return $this->totalPrice;
     }
+
+    public function getDate(): DateTime
+    {
+        return $this->date;
+    }
 }

@@ -1,6 +1,0 @@
-<?php
-
-declare(strict_types=1);
-/* 45. クーポンの適用ロジック:
-Cart の合計金額から割引を行う Coupon クラスを作成してください。割引には固定額割引と、率割引の2種類があるとします。Cart クラスに applyCoupon(Coupon $coupon) のようなメソッドを追加します。
-*/

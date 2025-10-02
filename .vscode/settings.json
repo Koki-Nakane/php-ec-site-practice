@@ -13,5 +13,8 @@
             "database": "php-ec-site-practice_db",
             "username": "user"
         }
-    ]
+    ],
+    "phpGettersSetters.templatesDir": "/home/koki/projects/php-ec-site-practice/.vscode/php-getters-setters",
+    "phpGettersSetters.getterTemplate": "getter.js",
+    "phpGettersSetters.setterTemplate": "setter.js"
 }

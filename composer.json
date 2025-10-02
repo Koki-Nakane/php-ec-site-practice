@@ -3,7 +3,8 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/"
-        }
+        },
+        "files": ["src/Util/DateRange.php"]
     },
     "require": {
         "erusev/parsedown": "^1.7"
@@ -15,6 +16,6 @@
     "scripts": {
         "format:dry": "php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.dist.php",
         "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
-        "stan": "phpstan analyse"
+    "stan": "phpstan analyse -c config/phpstan.neon"
     }
 }

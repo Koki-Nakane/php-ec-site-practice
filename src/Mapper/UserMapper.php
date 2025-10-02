@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mapper;
 
+use App\Contracts\EventDispatcherInterface;
 use App\Model\User;
 use App\Traits\Logger;
 use PDO;
@@ -13,10 +14,12 @@ final class UserMapper
     use Logger;
 
     private PDO $pdo;
+    private ?EventDispatcherInterface $events;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, ?EventDispatcherInterface $events = null)
     {
         $this->pdo = $pdo;
+        $this->events = $events;
     }
 
     public function find(int $id): ?User
@@ -49,11 +52,14 @@ final class UserMapper
 
     public function save(User $user): void
     {
-        if ($user->getId() === null || $user->getId() === 0) {
+        // getId() は null か 正の整数想定。0 判定は不要なので取り除き、変数に保持して判定回数も減らす。
+        $id = $user->getId();
+        if ($id === null) {
             $this->insert($user);
-        } else {
-            $this->update($user);
+            return;
         }
+
+        $this->update($user);
 
     }
 
@@ -72,6 +78,15 @@ final class UserMapper
         $user->setId((int)$id);
 
         $this->log("User created: ID = {$user->getId()}, Name = {$user->getName()}, Email = {$user->getEmail()}");
+
+        // Emit domain event (if dispatcher is available)
+        if ($this->events) {
+            $this->events->dispatch('user.created', [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'name' => $user->getName(),
+            ]);
+        }
     }
 
     private function update(User $user): void

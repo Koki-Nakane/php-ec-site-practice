@@ -14,7 +14,8 @@ final class Database
 
     private function __construct()
     {
-        $dsn = 'mysql:host=db;dbname=php_advanced_db';
+        // Updated to match docker-compose MYSQL_DATABASE value
+        $dsn = 'mysql:host=db;dbname=php-ec-site-practice_db';
         $username = 'user';
         $password = 'user_password';
 
