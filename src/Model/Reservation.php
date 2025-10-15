@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use DateTime;
+
 final class Reservation
 {
     private ?int $id;
+    private DateTime $createdAt;
 
     public function __construct(
         private User $user,
         private TimeSlot $timeSlot,
-        ?int $id = null
+        ?int $id = null,
     ) {
         $this->id = $id;
+        $this->createdAt = new DateTime();
     }
 
     public function getId(): ?int
@@ -35,5 +39,10 @@ final class Reservation
     public function getTimeSlot(): TimeSlot
     {
         return $this->timeSlot;
+    }
+
+    public function getCreatedAt(): DateTime
+    {
+        return $this->createdAt;
     }
 }

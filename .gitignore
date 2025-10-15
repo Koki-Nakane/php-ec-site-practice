@@ -1,3 +1,5 @@
+var/log/
+*.log
 # CakePHP 3
 
 /vendor/*
@@ -26,3 +28,25 @@
 
 # Windows Zone.Identifier files
 *.Zone.Identifier
+
+# Project specific
+/var/log/
+/var/cache/
+/var/tmp/
+
+# Composer vendor (if not already excluded by other rules)
+/vendor/
+
+# Editor settings
+/.vscode/
+/.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Tool caches
+.php-cs-fixer.cache
+
+# Legacy xdebug log at root (will be moved to var/log/)
+/xdebug.log

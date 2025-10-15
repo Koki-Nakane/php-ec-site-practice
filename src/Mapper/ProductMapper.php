@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Mapper;
 
 use App\Model\Product;
-use PDO;
 
 final class ProductMapper
 {
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
     }

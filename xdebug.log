@@ -403,3 +403,39 @@
 [5626] [Step Debug] <- context_get -i 12 -d 0 -c 0
 [5626] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="context_get" transaction_id="12" context="0"></response>
 
+[22] Log opened at 2025-09-07 10:11:19.457838
+[22] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.22'
+[22] Log closed at 2025-09-07 10:11:19.462192
+
+[40] Log opened at 2025-09-07 10:24:29.309614
+[40] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.40'
+[40] [Step Debug] INFO: Connecting to configured address/port: localhost:9003.
+[40] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[40] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[40] [Step Debug] ERR: Could not connect to debugging client. Tried: localhost:9003 (through xdebug.client_host/xdebug.client_port).
+[60] Log opened at 2025-09-07 10:24:29.698202
+[60] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.60'
+[60] [Step Debug] INFO: Connecting to configured address/port: localhost:9003.
+[60] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[60] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[60] [Step Debug] ERR: Could not connect to debugging client. Tried: localhost:9003 (through xdebug.client_host/xdebug.client_port).
+[60] Log closed at 2025-09-07 10:24:33.104724
+
+[40] Log closed at 2025-09-07 10:24:33.127619
+
+[69] Log opened at 2025-09-07 10:27:43.461832
+[69] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.69'
+[69] [Step Debug] INFO: Connecting to configured address/port: localhost:9003.
+[69] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[69] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[69] [Step Debug] ERR: Could not connect to debugging client. Tried: localhost:9003 (through xdebug.client_host/xdebug.client_port).
+[89] Log opened at 2025-09-07 10:27:43.674972
+[89] [Config] INFO: Control socket set up successfully: '@xdebug-ctrl.89'
+[89] [Step Debug] INFO: Connecting to configured address/port: localhost:9003.
+[89] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[89] [Step Debug] WARN: Creating socket for 'localhost:9003', poll success, but error: Operation now in progress (29).
+[89] [Step Debug] ERR: Could not connect to debugging client. Tried: localhost:9003 (through xdebug.client_host/xdebug.client_port).
+[89] Log closed at 2025-09-07 10:27:45.839493
+
+[69] Log closed at 2025-09-07 10:27:45.863427
+

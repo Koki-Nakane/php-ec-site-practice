@@ -28,3 +28,23 @@ COPY ./.devcontainer/xdebug.ini /usr/local/etc/php/conf.d/99-xdebug.ini
 
 # Composerをインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# --- Non-root user setup (match host UID/GID 1000) ---
+RUN groupadd -g 1000 appgroup \
+    && useradd -u 1000 -g appgroup -m appuser \
+    && mkdir -p /var/www/html \
+    && chown -R appuser:appgroup /var/www/html
+
+# Entrypoint script to adjust ownership of any root-owned leftover files (first run after bind mount)
+COPY ./.devcontainer/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+    && sed -ri -e 's#DocumentRoot /var/www/html#DocumentRoot /var/www/html/public#g' /etc/apache2/sites-available/000-default.conf \
+    && sed -ri -e 's#<Directory /var/www/>#<Directory /var/www/html/public/>#g' /etc/apache2/apache2.conf \
+    && sed -ri -e 's#<Directory /var/www/html/>#<Directory /var/www/html/public/>#g' /etc/apache2/apache2.conf \
+    && sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
+    && a2enmod rewrite
+
+USER appuser
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["apache2-foreground"]

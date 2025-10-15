@@ -6,12 +6,11 @@ namespace App\Mapper;
 
 use App\Model\Comment;
 use DateTime;
-use PDO;
 
 final class CommentMapper
 {
     public function __construct(
-        private PDO $pdo
+        private \PDO $pdo
     ) {
     }
 
@@ -20,7 +19,8 @@ final class CommentMapper
         $sql = 'SELECT * FROM comments WHERE post_id = ? ORDER BY created_at DESC';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$postId]);
-        $rows = $stmt->fetchAll();
+        // Fetch associative arrays for clearer mapping
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $comments = [];
 
@@ -50,7 +50,8 @@ final class CommentMapper
         $sql = 'INSERT INTO comments (post_id, author_name, content) VALUES (:post_id, :author_name, :content)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':post_id' => $comment->getID(),
+            // post_id references the related post, not the comment id
+            ':post_id' => $comment->getPostId(),
             ':author_name' => $comment->getAuthorName(),
             ':content' => $comment->getContent(),
         ]);
@@ -61,15 +62,12 @@ final class CommentMapper
 
     private function update(Comment $comment): void
     {
-        $sql = 'UPDATE comments SET name = :name, price = :price, description = :description, stock = :stock WHERE id = :id';
-
+        // Only author_name and content are updatable; created_at remains immutable
+        $sql = 'UPDATE comments SET author_name = :author_name, content = :content WHERE id = :id';
         $stmt = $this->pdo->prepare($sql);
-
         $stmt->execute([
-            ':name' => $comment->getName(),
-            ':price' => $comment->getPrice(),
-            ':description' => $comment->getDescription(),
-            ':stock' => $comment->getStock(),
+            ':author_name' => $comment->getAuthorName(),
+            ':content' => $comment->getContent(),
             ':id' => $comment->getId(),
         ]);
     }
