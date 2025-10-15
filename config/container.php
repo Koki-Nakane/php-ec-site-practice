@@ -16,30 +16,34 @@ use App\Mapper\OrderMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
-use PDO;
+use App\Service\OrderCsvExporter;
 
 // Build and return a DI container with core services.
 $container = new Container();
 
 // PDO (shared)
-$container->set(PDO::class, function (): PDO {
+$container->set(\PDO::class, function (): \PDO {
     return Database::getInstance()->getConnection();
 }, shared: true);
 
 // Mappers (shared)
 $container->set(UserMapper::class, function (ContainerInterface $c): UserMapper {
     return new UserMapper(
-        $c->get(PDO::class),
+        $c->get(\PDO::class),
         $c->get(EventDispatcherInterface::class)
     );
 }, shared: true);
 
 $container->set(ProductMapper::class, function (ContainerInterface $c): ProductMapper {
-    return new ProductMapper($c->get(PDO::class));
+    return new ProductMapper($c->get(\PDO::class));
 }, shared: true);
 
 $container->set(OrderMapper::class, function (ContainerInterface $c): OrderMapper {
-    return new OrderMapper($c->get(PDO::class), $c->get(ProductMapper::class));
+    return new OrderMapper($c->get(\PDO::class), $c->get(ProductMapper::class));
+}, shared: true);
+
+$container->set(OrderCsvExporter::class, function (ContainerInterface $c): OrderCsvExporter {
+    return new OrderCsvExporter($c->get(OrderMapper::class));
 }, shared: true);
 
 // Controllers (shared)
@@ -53,9 +57,10 @@ $container->set(HomeController::class, function (ContainerInterface $c): HomeCon
 
 $container->set(OrderController::class, function (ContainerInterface $c): OrderController {
     return new OrderController(
-        $c->get(PDO::class),
+        $c->get(\PDO::class),
         $c->get(UserMapper::class),
-        $c->get(ProductMapper::class)
+        $c->get(ProductMapper::class),
+        $c->get(OrderCsvExporter::class)
     );
 }, shared: true);
 

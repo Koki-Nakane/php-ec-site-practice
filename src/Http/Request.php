@@ -34,11 +34,16 @@ final class Request
             $headers['Content-Type'] = (string) $_SERVER['CONTENT_TYPE'];
         }
 
+        /** @var array<string,mixed> $query */
+        $query = $_GET;
+        /** @var array<string,mixed> $body */
+        $body = $_POST;
+
         return new self(
             method: $method,
             path: $path,
-            query: $_GET ?? [],
-            body: $_POST ?? [],
+            query: $query,
+            body: $body,
             headers: $headers,
         );
     }

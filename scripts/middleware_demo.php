@@ -11,6 +11,9 @@ use App\Http\Response;
 use App\Infrastructure\Middleware\AuthenticationMiddleware;
 use App\Infrastructure\Middleware\LoggingMiddleware;
 use App\Infrastructure\Middleware\Pipeline;
+use App\Service\NullLogger;
+
+$logger = new NullLogger();
 
 // 最終的なリクエストハンドラ（アプリケーション本体の代わり）
 $destination = function (Request $request): Response {
@@ -28,7 +31,7 @@ $pipeline = new Pipeline();
 
 // 2. ミドルウェアをパイプラインに追加（実行順）
 // LoggingMiddleware -> AuthenticationMiddleware -> Destination
-$pipeline->pipe(new LoggingMiddleware());
+$pipeline->pipe(new LoggingMiddleware($logger));
 $pipeline->pipe(new AuthenticationMiddleware());
 
 // 3. 認証情報を含むリクエストを作成
@@ -52,7 +55,7 @@ echo "-------------------------------------------------------\n";
 
 // 1. パイプラインを準備（新しいインスタンスを使用）
 $pipeline2 = new Pipeline();
-$pipeline2->pipe(new LoggingMiddleware());
+$pipeline2->pipe(new LoggingMiddleware($logger));
 $pipeline2->pipe(new AuthenticationMiddleware());
 
 // 2. 認証情報を含まないリクエストを作成

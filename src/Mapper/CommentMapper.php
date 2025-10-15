@@ -6,12 +6,11 @@ namespace App\Mapper;
 
 use App\Model\Comment;
 use DateTime;
-use PDO;
 
 final class CommentMapper
 {
     public function __construct(
-        private PDO $pdo
+        private \PDO $pdo
     ) {
     }
 

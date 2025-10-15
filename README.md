@@ -9,6 +9,17 @@
 2. コンテナ起動
 	- コンテナ起動後、Apache のドキュメントルートは `public/` になります。
 
+## デモデータの投入
+
+- `scripts/seed_demo.php` を実行すると、学習用のデモユーザーなど最低限のデータを投入できます。
+	- 例: `docker compose exec app php scripts/seed_demo.php`
+- 既存データがある場合は上書き更新されます。
+- 付与されるデモユーザーの認証情報は以下です。
+	- Email: `demo@example.com`
+	- Password: `Password123`
+
+> `users.name` カラムにはアプリケーションと同じ ASCII 制約（英数字+アンダースコア）が付与されています。シードや手動投入時もこのルールを守ってください。
+
 ## 構成のポイント
 
 - すべてのリクエストは `public/index.php`（フロントコントローラ）を通過します。
@@ -25,15 +36,15 @@
 
 ## 旧 .php 直リンクからの移行
 
-以前は `index.php` や `api/products.php` など、ルート直下の `.php` に直接アクセスしていました。現在は以下のように置き換えています。
+以前は `login.php` や `order_complete.php` など、ルート直下の `.php` に直接アクセスしていましたが現在は削除済みです。利用者は次のルートを参照してください。
 
-- `index.php` → `public/index.php`（フロントコントローラに統合）
-- `/api/products.php` → `/api/products`
-- `/api/product.php?id=...` → 今後実装するなら `/api/products/{id}` 等を検討
-- `/checkout.php` → `/checkout`
-- `/place_order.php` → `/place_order`
-- `/cart.php` → `/cart`（将来的にフロントコントローラへ統合予定）
-- `/add_to_cart.php` → `/add_to_cart`（将来的にフロントコントローラへ統合予定）
+- `/login`（GET/POST） … ログイン画面・認証処理
+- `/orders`（GET） … 注文履歴画面
+- `/orders/export`（POST） … CSV ダウンロード
+- `/order_complete`（GET） … ご注文完了画面
+- `/checkout` / `/place_order` … 注文確定フロー
+- `/cart` / `/add_to_cart` … カート機能
+- `/api/products` … 商品一覧 API
 
 ドキュメントやスクリプトでは `.php` 拡張子付きの URL を使わず、上記のルート表現を使用してください。
 

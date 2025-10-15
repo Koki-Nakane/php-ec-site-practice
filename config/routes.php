@@ -20,6 +20,8 @@ return function (HomeController $home, OrderController $order, CartController $c
         ['POST', '/add_to_cart',   'web:public', [$cart, 'add']],
         ['GET',  '/login',         'web:public', [$auth, 'showLogin']],
         ['POST', '/login',         'web:public', [$auth, 'handleLogin']],
+        ['GET',  '/orders',        'web:auth',   [$order, 'orders']],
+        ['POST', '/orders/export', 'web:auth',   [$order, 'exportMonthlyCsv']],
         ['GET',  '/checkout',      'web:auth',   [$order, 'checkout']],
         ['POST', '/place_order',   'web:auth',   [$order, 'place']],
         ['GET',  '/order_complete','web:auth',   [$order, 'orderComplete']],

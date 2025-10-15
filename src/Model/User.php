@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Model;
 
 use Exception;
+use InvalidArgumentException;
 
 final class User
 {
     private ?int $id;
     private string $hashedPassword;
+    private string $name;
 
     public function __construct(
-        private string $name,
+        string $name,
         private string $email,
         string $plainPassword,
         private string $address,
@@ -20,6 +22,7 @@ final class User
     ) {
         $this->setPassword($plainPassword);
         $this->id = $id;
+        $this->setName($name);
     }
 
     public function verifyPassword(string $plainPassword): bool
@@ -89,6 +92,17 @@ final class User
     private function setHashedPassword(string $hashedPassword): void
     {
         $this->hashedPassword = $hashedPassword;
+    }
+
+    private function setName(string $name): void
+    {
+        $pattern = '/^[a-zA-Z0-9_]+$/';
+
+        if (preg_match($pattern, $name) !== 1) {
+            throw new InvalidArgumentException('Username must contain only ASCII letters, digits, or underscores.');
+        }
+
+        $this->name = $name;
     }
 
 }

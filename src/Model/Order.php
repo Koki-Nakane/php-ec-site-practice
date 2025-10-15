@@ -13,18 +13,44 @@ final class Order
     private array $cartItems;
     private float $totalPrice;
     private DateTime $date;
+    private string $shippingAddress;
 
     public function __construct(
         User $user,
         Cart $cart,
-        ?int $id = null
+        ?int $id = null,
+        ?string $shippingAddress = null,
+        ?DateTime $createdAt = null
     ) {
         $this->user = $user;
         $this->cartItems = $cart->getItems();
         $this->totalPrice = $cart->getTotalPrice();
-        $this->date = new DateTime();
+        $this->date = $createdAt ?? new DateTime();
+        $this->shippingAddress = $shippingAddress ?? $user->getAddress();
 
         $this->id = $id;
+    }
+
+    public static function fromSnapshot(
+        User $user,
+        array $items,
+        float $totalPrice,
+        string $shippingAddress,
+        string $createdAt,
+        int $id
+    ): self {
+        $order = new self(
+            $user,
+            new Cart(),
+            $id,
+            $shippingAddress,
+            new DateTime($createdAt)
+        );
+
+        $order->cartItems = $items;
+        $order->totalPrice = $totalPrice;
+
+        return $order;
     }
 
     public function getId(): ?int
@@ -55,5 +81,10 @@ final class Order
     public function getDate(): DateTime
     {
         return $this->date;
+    }
+
+    public function getShippingAddress(): string
+    {
+        return $this->shippingAddress;
     }
 }

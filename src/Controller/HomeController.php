@@ -17,6 +17,7 @@ final class HomeController
     public function index(Request $request): Response
     {
         $items = $this->products->findAll();
+        $isLoggedIn = isset($_SESSION['user_id']);
 
         ob_start();
         ?>
@@ -27,8 +28,24 @@ final class HomeController
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>商品一覧</title>
             <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+            <style>
+                body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 2rem; }
+                .site-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+                .site-header a { color: #0b5ed7; text-decoration: none; font-weight: 600; }
+                .site-header a:hover { text-decoration: underline; }
+            </style>
         </head>
         <body>
+            <header class="site-header">
+                <div><a href="/">EC Practice</a></div>
+                <nav>
+                    <?php if ($isLoggedIn): ?>
+                        <a href="/orders">注文履歴</a>
+                    <?php else: ?>
+                        <a href="/login">ログイン</a>
+                    <?php endif; ?>
+                </nav>
+            </header>
             <h1>商品一覧</h1>
             <?php if (empty($items)):?>
                 <p>現在、販売中の商品はありません。</p>

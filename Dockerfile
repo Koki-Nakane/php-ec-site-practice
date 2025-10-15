@@ -41,6 +41,7 @@ RUN chmod +x /entrypoint.sh \
     && sed -ri -e 's#DocumentRoot /var/www/html#DocumentRoot /var/www/html/public#g' /etc/apache2/sites-available/000-default.conf \
     && sed -ri -e 's#<Directory /var/www/>#<Directory /var/www/html/public/>#g' /etc/apache2/apache2.conf \
     && sed -ri -e 's#<Directory /var/www/html/>#<Directory /var/www/html/public/>#g' /etc/apache2/apache2.conf \
+    && sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
     && a2enmod rewrite
 
 USER appuser

@@ -7,16 +7,15 @@ namespace App\Mapper;
 use App\Contracts\EventDispatcherInterface;
 use App\Model\User;
 use App\Traits\Logger;
-use PDO;
 
 final class UserMapper
 {
     use Logger;
 
-    private PDO $pdo;
+    private \PDO $pdo;
     private ?EventDispatcherInterface $events;
 
-    public function __construct(PDO $pdo, ?EventDispatcherInterface $events = null)
+    public function __construct(\PDO $pdo, ?EventDispatcherInterface $events = null)
     {
         $this->pdo = $pdo;
         $this->events = $events;

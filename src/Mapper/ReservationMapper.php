@@ -7,12 +7,11 @@ namespace App\Mapper;
 use App\Model\Enum\TimeSlotStatus;
 use App\Model\Reservation;
 use LogicException;
-use PDO;
 use RuntimeException;
 
 final class ReservationMapper
 {
-    public function __construct(private PDO $pdo)
+    public function __construct(private \PDO $pdo)
     {
     }
 
