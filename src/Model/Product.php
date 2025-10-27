@@ -256,16 +256,6 @@ final class Product
         $this->updatedAt = $updatedAt;
     }
 
-    public function setPrice(float $price): void
-    {
-        $this->changePrice($price);
-    }
-
-    public function setStock(int $stock): void
-    {
-        $this->changeStock($stock);
-    }
-
     public function toArray(): array
     {
         return [
