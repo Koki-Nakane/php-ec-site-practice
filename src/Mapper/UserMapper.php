@@ -7,6 +7,7 @@ namespace App\Mapper;
 use App\Contracts\EventDispatcherInterface;
 use App\Model\User;
 use App\Traits\Logger;
+use DateTimeImmutable;
 
 final class UserMapper
 {
@@ -64,13 +65,15 @@ final class UserMapper
 
     private function insert(User $user): void
     {
-        $sql = 'INSERT INTO users (name, email, password, address) VALUES (:name, :email, :password, :address)';
+        $sql = 'INSERT INTO users (name, email, password, address, is_admin, deleted_at) VALUES (:name, :email, :password, :address, :is_admin, :deleted_at)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':name' => $user->getName(),
             ':email' => $user->getEmail(),
             ':password' => $user->getHashedPassword(),
             ':address' => $user->getAddress(),
+            ':is_admin' => $user->isAdmin() ? 1 : 0,
+            ':deleted_at' => $this->formatNullableDate($user->getDeletedAt()),
         ]);
 
         $id = $this->pdo->lastInsertId();
@@ -90,7 +93,7 @@ final class UserMapper
 
     private function update(User $user): void
     {
-        $sql = 'UPDATE users SET name = :name, email = :email, password = :password, address = :address WHERE id = :id';
+        $sql = 'UPDATE users SET name = :name, email = :email, password = :password, address = :address, is_admin = :is_admin, deleted_at = :deleted_at WHERE id = :id';
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -99,6 +102,8 @@ final class UserMapper
             ':email' => $user->getEmail(),
             ':password' => $user->getHashedPassword(),
             ':address' => $user->getAddress(),
+            ':is_admin' => $user->isAdmin() ? 1 : 0,
+            ':deleted_at' => $this->formatNullableDate($user->getDeletedAt()),
             ':id' => $user->getId(),
         ]);
 
@@ -112,6 +117,11 @@ final class UserMapper
         $stmt->execute([$user->getId()]);
 
         $this->log("User deleted: ID = {$user->getId()}, Email = {$user->getEmail()}");
+    }
+
+    private function formatNullableDate(?DateTimeImmutable $date): ?string
+    {
+        return $date?->format('Y-m-d H:i:s');
     }
 
 }

@@ -74,6 +74,7 @@
 
 ## DB変更メモ（随時更新）
 - `users` テーブル: `is_admin TINYINT(1) NOT NULL DEFAULT 0`、`deleted_at TIMESTAMP NULL` を追加予定。管理検索用に `INDEX users_is_admin_deleted_at_idx (is_admin, deleted_at)` を検討。
+	- 2025-11-05: `2025_11_05_000000_add_is_admin_and_deleted_at_to_users.sql` を追加し、上記カラムと複合インデックスを実装済み。
 - `products` テーブル: 公開状態を制御する `is_active TINYINT(1) NOT NULL DEFAULT 1` を追加し、既存の `updated_at` と連動させる。
 - `orders` テーブル: 状態管理のための `status TINYINT NOT NULL DEFAULT 0`、論理削除用の `deleted_at TIMESTAMP NULL`、更新追跡用の `updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` を追加する。`shipping_address` は既存マイグレーションで実装済み。
 

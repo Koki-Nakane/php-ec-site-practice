@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use DateTimeImmutable;
+use DomainException;
 use Exception;
 use InvalidArgumentException;
 
@@ -12,6 +14,8 @@ final class User
     private ?int $id;
     private string $hashedPassword;
     private string $name;
+    private bool $isAdmin;
+    private ?DateTimeImmutable $deletedAt;
 
     public function __construct(
         string $name,
@@ -19,10 +23,14 @@ final class User
         string $plainPassword,
         private string $address,
         ?int $id,
+        bool $isAdmin = false,
+        ?DateTimeImmutable $deletedAt = null,
     ) {
         $this->setPassword($plainPassword);
         $this->id = $id;
         $this->setName($name);
+        $this->isAdmin = $isAdmin;
+        $this->deletedAt = $deletedAt;
     }
 
     public function verifyPassword(string $plainPassword): bool
@@ -32,12 +40,21 @@ final class User
 
     public static function createFromDbRow(array $row): User
     {
+        $deletedAt = null;
+        if (!empty($row['deleted_at'])) {
+            $deletedAt = new DateTimeImmutable((string)$row['deleted_at']);
+        }
+
+        $isAdmin = isset($row['is_admin']) ? ((int)$row['is_admin'] === 1) : false;
+
         $user = new self(
             $row['name'],
             $row['email'],
             'dummypassword',
             $row['address'],
-            (int)$row['id']
+            (int)$row['id'],
+            $isAdmin,
+            $deletedAt,
         );
 
         $user->setHashedPassword($row['password']);
@@ -70,6 +87,49 @@ final class User
         return $this->address;
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
+    }
+
+    public function promoteToAdmin(): void
+    {
+        $this->isAdmin = true;
+    }
+
+    public function demoteFromAdmin(): void
+    {
+        $this->isAdmin = false;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function markDeleted(DateTimeImmutable $deletedAt): void
+    {
+        if ($this->isDeleted()) {
+            throw new DomainException('ユーザーはすでに削除済みです。');
+        }
+
+        $this->deletedAt = $deletedAt;
+    }
+
+    public function restore(): void
+    {
+        if (!$this->isDeleted()) {
+            throw new DomainException('削除されていないユーザーは復元できません。');
+        }
+
+        $this->deletedAt = null;
+    }
+
     public function setId(int $id): void
     {
         if ($this->id !== null) {
@@ -83,7 +143,7 @@ final class User
         $this->id = $id;
     }
 
-    private function setPassword($plainPassword): void
+    private function setPassword(string $plainPassword): void
     {
         $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
         $this->hashedPassword = $hashedPassword;
