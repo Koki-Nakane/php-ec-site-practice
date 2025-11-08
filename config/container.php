@@ -18,6 +18,7 @@ use App\Mapper\OrderMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
+use App\Service\CsrfTokenManager;
 use App\Service\OrderCsvExporter;
 use App\Service\TemplateRenderer;
 
@@ -49,6 +50,10 @@ $container->set(OrderCsvExporter::class, function (ContainerInterface $c): Order
     return new OrderCsvExporter($c->get(OrderMapper::class));
 }, shared: true);
 
+$container->set(CsrfTokenManager::class, function (): CsrfTokenManager {
+    return new CsrfTokenManager();
+}, shared: true);
+
 $container->set(TemplateRenderer::class, function (): TemplateRenderer {
     return new TemplateRenderer(__DIR__ . '/../views');
 }, shared: true);
@@ -67,7 +72,8 @@ $container->set(OrderController::class, function (ContainerInterface $c): OrderC
         $c->get(\PDO::class),
         $c->get(UserMapper::class),
         $c->get(ProductMapper::class),
-        $c->get(OrderCsvExporter::class)
+        $c->get(OrderCsvExporter::class),
+        $c->get(CsrfTokenManager::class)
     );
 }, shared: true);
 
@@ -86,7 +92,8 @@ $container->set(DashboardController::class, function (ContainerInterface $c): Da
 $container->set(AdminProductController::class, function (ContainerInterface $c): AdminProductController {
     return new AdminProductController(
         $c->get(ProductMapper::class),
-        $c->get(TemplateRenderer::class)
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
     );
 }, shared: true);
 

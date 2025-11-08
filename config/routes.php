@@ -35,7 +35,10 @@ return function (
         ['POST', '/place_order',   'web:auth',   [$order, 'place']],
         ['GET',  '/order_complete','web:auth',   [$order, 'orderComplete']],
         ['GET',  '/api/products',  'api:public', [$home, 'apiProducts']],
-        ['GET',  '/admin',         'web:admin', [$adminDashboard, 'index']],
-        ['GET',  '/admin/products','web:admin', [$adminProducts, 'index']],
+        ['GET',  '/admin',                  'web:admin', [$adminDashboard, 'index']],
+        ['GET',  '/admin/products',         'web:admin', [$adminProducts, 'index']],
+        ['GET',  '/admin/products/edit',    'web:admin', [$adminProducts, 'edit']],
+        ['POST', '/admin/products/update',  'web:admin', [$adminProducts, 'update']],
+        ['POST', '/admin/products/toggle',  'web:admin', [$adminProducts, 'toggleActive']],
     ];
 };

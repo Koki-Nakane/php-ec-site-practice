@@ -1,5 +1,6 @@
 <?php
 /** @var App\Model\Product[] $products */
+/** @var array<int,array{type:string,message:string}> $flashes */
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -32,6 +33,16 @@
         </nav>
     </header>
 
+    <?php if (!empty($flashes)): ?>
+        <div style="margin-bottom: 1rem;">
+            <?php foreach ($flashes as $flash): ?>
+                <div style="padding: .75rem 1rem; border-radius: 6px; margin-bottom: .5rem; background: <?= $flash['type'] === 'success' ? '#e6f4ea' : '#fdecea'; ?>; color: <?= $flash['type'] === 'success' ? '#1e4620' : '#611a15'; ?>;">
+                    <?= htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
     <?php if ($products === []): ?>
         <p>登録されている商品はありません。</p>
     <?php else: ?>
@@ -44,6 +55,7 @@
                     <th>在庫</th>
                     <th>ステータス</th>
                     <th>更新日時</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,6 +74,7 @@
                             <?php endif; ?>
                         </td>
                         <td><?= htmlspecialchars($product->getUpdatedAt()->format('Y-m-d H:i'), ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><a href="/admin/products/edit?id=<?= htmlspecialchars((string) $product->getId(), ENT_QUOTES, 'UTF-8'); ?>">編集</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

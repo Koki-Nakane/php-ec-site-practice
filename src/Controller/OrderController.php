@@ -11,6 +11,7 @@ use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Cart;
 use App\Model\Order;
+use App\Service\CsrfTokenManager;
 use App\Service\Exception\NoOrdersForExportException;
 use App\Service\OrderCsvExporter;
 use DateInterval;
@@ -23,6 +24,7 @@ final class OrderController
         private UserMapper $users,
         private ProductMapper $products,
         private OrderCsvExporter $csvExporter,
+        private CsrfTokenManager $csrfTokens,
     ) {
     }
 
@@ -172,7 +174,7 @@ final class OrderController
         $mapper = new OrderMapper($this->pdo, $this->products);
         $orders = $mapper->findByUserAndMonth($user, $currentMonth);
 
-        $csrfToken = $this->issueCsrfToken();
+        $csrfToken = $this->csrfTokens->issue('orders_export');
 
         ob_start();
         ?>
@@ -262,7 +264,7 @@ final class OrderController
             return Response::redirect('/login');
         }
 
-        if (!$this->isValidCsrfToken($request->body['_token'] ?? null)) {
+        if (!$this->csrfTokens->validate('orders_export', $request->body['_token'] ?? null)) {
             $_SESSION['error_message'] = 'フォームの有効期限が切れました。もう一度お試しください。';
             return Response::redirect('/orders');
         }
@@ -318,28 +320,5 @@ final class OrderController
         }
 
         return [$month, $month->format('Y-m')];
-    }
-
-    private function issueCsrfToken(): string
-    {
-        $token = bin2hex(random_bytes(32));
-        $_SESSION['csrf_token'] = $token;
-
-        return $token;
-    }
-
-    private function isValidCsrfToken(?string $token): bool
-    {
-        $sessionToken = $_SESSION['csrf_token'] ?? null;
-        if (!is_string($sessionToken) || !is_string($token)) {
-            return false;
-        }
-
-        $isValid = hash_equals($sessionToken, $token);
-        if ($isValid) {
-            unset($_SESSION['csrf_token']);
-        }
-
-        return $isValid;
     }
 }
