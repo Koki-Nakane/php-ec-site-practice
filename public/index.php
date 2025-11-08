@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Controller\Admin\DashboardController;
+use App\Controller\Admin\ProductController as AdminProductController;
 use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
@@ -9,6 +11,7 @@ use App\Controller\OrderController;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\ResponseEmitter;
+use App\Infrastructure\Middleware\AdminAuthMiddleware;
 use App\Infrastructure\Middleware\AuthMiddleware;
 use App\Infrastructure\Middleware\ErrorHandlerMiddleware;
 use App\Infrastructure\Middleware\LoggingMiddleware;
@@ -31,10 +34,15 @@ $home = $container->get(HomeController::class);
 $order = $container->get(OrderController::class);
 /** @var CartController $cart */
 $cart = $container->get(CartController::class);
+/** @var DashboardController $adminDashboard */
+$adminDashboard = $container->get(DashboardController::class);
+/** @var AdminProductController $adminProducts */
+$adminProducts = $container->get(AdminProductController::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
-$routes = $routesFactory($home, $order, $cart, $auth);
+
+$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts);
 
 // ルート解決
 $route = null;
@@ -68,6 +76,10 @@ if ($tag === 'web:auth') {
 }
 if ($tag === 'api:auth') {
     $pipeline->pipe(new AuthMiddleware($auth, '/login', true));
+}
+if ($tag === 'web:admin') {
+    $pipeline->pipe(new AuthMiddleware($auth, '/login', false));
+    $pipeline->pipe(new AdminAuthMiddleware($auth));
 }
 
 $response = $pipeline->process($request, $handler);
