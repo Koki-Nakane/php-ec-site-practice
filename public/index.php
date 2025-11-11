@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controller\Admin\DashboardController;
+use App\Controller\Admin\OrderController as AdminOrderController;
 use App\Controller\Admin\ProductController as AdminProductController;
 use App\Controller\Admin\UserController as AdminUserController;
 use App\Controller\AuthController;
@@ -39,13 +40,15 @@ $cart = $container->get(CartController::class);
 $adminDashboard = $container->get(DashboardController::class);
 /** @var AdminProductController $adminProducts */
 $adminProducts = $container->get(AdminProductController::class);
+/** @var AdminOrderController $adminOrders */
+$adminOrders = $container->get(AdminOrderController::class);
 /** @var AdminUserController $adminUsers */
 $adminUsers = $container->get(AdminUserController::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
 
-$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminUsers);
+$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers);
 
 // ルート解決
 $route = null;

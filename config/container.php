@@ -74,6 +74,7 @@ $container->set(OrderController::class, function (ContainerInterface $c): OrderC
         $c->get(\PDO::class),
         $c->get(UserMapper::class),
         $c->get(ProductMapper::class),
+        $c->get(OrderMapper::class),
         $c->get(OrderCsvExporter::class),
         $c->get(CsrfTokenManager::class)
     );
