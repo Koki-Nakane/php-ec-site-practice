@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Http\Request;
 use App\Http\Response;
 use App\Mapper\UserMapper;
+use App\Model\User;
 
 final class AuthController
 {
@@ -26,18 +27,48 @@ final class AuthController
             return false;
         }
 
-        if (password_verify($password, $user->getHashedPassword())) {
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $user->getId();
-            return true;
+        if ($user->isDeleted()) {
+            return false;
         }
 
-        return false;
+        if (!password_verify($password, $user->getHashedPassword())) {
+            return false;
+        }
+
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user->getId();
+
+        return true;
     }
 
     public function isAuthenticated(): bool
     {
         return isset($_SESSION['user_id']);
+    }
+
+    public function requireUser(): ?User
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        if ($userId === null) {
+            return null;
+        }
+
+        $user = $this->userMapper->find((int) $userId);
+        if ($user === null || $user->isDeleted()) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    public function isAdmin(): bool
+    {
+        $user = $this->requireUser();
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->isAdmin();
     }
 
     // GET /login

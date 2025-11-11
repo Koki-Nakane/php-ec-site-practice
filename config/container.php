@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Contracts\ContainerInterface;
 use App\Contracts\EventDispatcherInterface;
+use App\Controller\Admin\DashboardController;
+use App\Controller\Admin\OrderController as AdminOrderController;
+use App\Controller\Admin\ProductController as AdminProductController;
+use App\Controller\Admin\UserController as AdminUserController;
 use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
@@ -16,7 +20,9 @@ use App\Mapper\OrderMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
+use App\Service\CsrfTokenManager;
 use App\Service\OrderCsvExporter;
+use App\Service\TemplateRenderer;
 
 // Build and return a DI container with core services.
 $container = new Container();
@@ -46,6 +52,14 @@ $container->set(OrderCsvExporter::class, function (ContainerInterface $c): Order
     return new OrderCsvExporter($c->get(OrderMapper::class));
 }, shared: true);
 
+$container->set(CsrfTokenManager::class, function (): CsrfTokenManager {
+    return new CsrfTokenManager();
+}, shared: true);
+
+$container->set(TemplateRenderer::class, function (): TemplateRenderer {
+    return new TemplateRenderer(__DIR__ . '/../views');
+}, shared: true);
+
 // Controllers (shared)
 $container->set(AuthController::class, function (ContainerInterface $c): AuthController {
     return new AuthController($c->get(UserMapper::class));
@@ -60,13 +74,45 @@ $container->set(OrderController::class, function (ContainerInterface $c): OrderC
         $c->get(\PDO::class),
         $c->get(UserMapper::class),
         $c->get(ProductMapper::class),
-        $c->get(OrderCsvExporter::class)
+        $c->get(OrderMapper::class),
+        $c->get(OrderCsvExporter::class),
+        $c->get(CsrfTokenManager::class)
     );
 }, shared: true);
 
 $container->set(CartController::class, function (ContainerInterface $c): CartController {
     return new CartController(
         $c->get(ProductMapper::class)
+    );
+}, shared: true);
+
+$container->set(DashboardController::class, function (ContainerInterface $c): DashboardController {
+    return new DashboardController(
+        $c->get(TemplateRenderer::class)
+    );
+}, shared: true);
+
+$container->set(AdminProductController::class, function (ContainerInterface $c): AdminProductController {
+    return new AdminProductController(
+        $c->get(ProductMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
+    );
+}, shared: true);
+
+$container->set(AdminUserController::class, function (ContainerInterface $c): AdminUserController {
+    return new AdminUserController(
+        $c->get(UserMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
+    );
+}, shared: true);
+
+$container->set(AdminOrderController::class, function (ContainerInterface $c): AdminOrderController {
+    return new AdminOrderController(
+        $c->get(OrderMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
     );
 }, shared: true);
 
