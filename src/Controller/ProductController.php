@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Exception\ConcurrentUpdateException;
+use App\Exception\ProductNotFoundException;
 use App\Mapper\ProductMapper;
 use App\Model\Product;
 use DateTimeImmutable;
-use Throwable;
+use DomainException;
+use InvalidArgumentException;
+use PDOException;
 
 final class ProductController
 {
@@ -20,7 +24,7 @@ final class ProductController
     {
         try {
             return $this->products->listForAdmin($onlyActive, $limit, $offset);
-        } catch (Throwable $e) {
+        } catch (PDOException|InvalidArgumentException $e) {
             return [];
         }
     }
@@ -29,7 +33,7 @@ final class ProductController
     {
         try {
             return $this->products->findIncludingDeleted($id);
-        } catch (Throwable $e) {
+        } catch (PDOException|InvalidArgumentException $e) {
             return null;
         }
     }
@@ -70,7 +74,13 @@ final class ProductController
             $this->products->save($product);
 
             return true;
-        } catch (Throwable $e) {
+        } catch (
+            ProductNotFoundException|
+            ConcurrentUpdateException|
+            InvalidArgumentException|
+            DomainException|
+            PDOException $e
+        ) {
             return false;
         }
     }
@@ -80,7 +90,13 @@ final class ProductController
         try {
             $this->products->markDeleted($id, $when ?? new DateTimeImmutable());
             return true;
-        } catch (Throwable $e) {
+        } catch (
+            ProductNotFoundException|
+            ConcurrentUpdateException|
+            InvalidArgumentException|
+            DomainException|
+            PDOException $e
+        ) {
             return false;
         }
     }
@@ -90,7 +106,13 @@ final class ProductController
         try {
             $this->products->restore($id, $when ?? new DateTimeImmutable());
             return true;
-        } catch (Throwable $e) {
+        } catch (
+            ProductNotFoundException|
+            ConcurrentUpdateException|
+            InvalidArgumentException|
+            DomainException|
+            PDOException $e
+        ) {
             return false;
         }
     }
@@ -100,7 +122,13 @@ final class ProductController
         try {
             $this->products->enable($id, $when ?? new DateTimeImmutable());
             return true;
-        } catch (Throwable $e) {
+        } catch (
+            ProductNotFoundException|
+            ConcurrentUpdateException|
+            InvalidArgumentException|
+            DomainException|
+            PDOException $e
+        ) {
             return false;
         }
     }
@@ -110,7 +138,13 @@ final class ProductController
         try {
             $this->products->disable($id, $when ?? new DateTimeImmutable());
             return true;
-        } catch (Throwable $e) {
+        } catch (
+            ProductNotFoundException|
+            ConcurrentUpdateException|
+            InvalidArgumentException|
+            DomainException|
+            PDOException $e
+        ) {
             return false;
         }
     }
