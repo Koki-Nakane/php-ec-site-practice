@@ -10,6 +10,7 @@ use App\Mapper\OrderMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Cart;
+use App\Model\Enum\OrderStatus;
 use App\Model\Order;
 use App\Service\CsrfTokenManager;
 use App\Service\Exception\NoOrdersForExportException;
@@ -23,6 +24,7 @@ final class OrderController
         private \PDO $pdo,
         private UserMapper $users,
         private ProductMapper $products,
+        private OrderMapper $orders,
         private OrderCsvExporter $csvExporter,
         private CsrfTokenManager $csrfTokens,
     ) {
@@ -110,8 +112,7 @@ final class OrderController
 
             $order = new Order($user, $cart);
 
-            $orderMapper = new OrderMapper($this->pdo, $this->products);
-            $orderMapper->save($order);
+            $this->orders->save($order);
 
             foreach ($order->getCartItems() as $item) {
                 $this->products->decreaseStock($item['product']->getId(), $item['quantity']);
@@ -171,8 +172,7 @@ final class OrderController
 
         [$currentMonth, $currentMonthString] = $this->resolveMonth(null);
 
-        $mapper = new OrderMapper($this->pdo, $this->products);
-        $orders = $mapper->findByUserAndMonth($user, $currentMonth);
+        $orders = $this->orders->findByUserAndMonth($user, $currentMonth);
 
         $csrfToken = $this->csrfTokens->issue('orders_export');
 
@@ -222,6 +222,7 @@ final class OrderController
                         <tr>
                             <th>注文ID</th>
                             <th>注文日時</th>
+                            <th>ステータス</th>
                             <th>合計金額</th>
                             <th>商品一覧</th>
                             <th>配送先</th>
@@ -236,6 +237,7 @@ final class OrderController
                             <tr>
                                 <td><?php echo htmlspecialchars((string)$order->getId(), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($order->getDate()->format('Y-m-d H:i:s'), ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars(OrderStatus::label($order->getStatus()), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars((string)$order->getTotalPrice(), ENT_QUOTES, 'UTF-8'); ?>円</td>
                                 <td><?php echo htmlspecialchars(implode('; ', $items), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo nl2br(htmlspecialchars($order->getShippingAddress(), ENT_QUOTES, 'UTF-8')); ?></td>

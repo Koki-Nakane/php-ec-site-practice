@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Contracts\ContainerInterface;
 use App\Contracts\EventDispatcherInterface;
 use App\Controller\Admin\DashboardController;
+use App\Controller\Admin\OrderController as AdminOrderController;
 use App\Controller\Admin\ProductController as AdminProductController;
 use App\Controller\Admin\UserController as AdminUserController;
 use App\Controller\AuthController;
@@ -101,6 +102,14 @@ $container->set(AdminProductController::class, function (ContainerInterface $c):
 $container->set(AdminUserController::class, function (ContainerInterface $c): AdminUserController {
     return new AdminUserController(
         $c->get(UserMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
+    );
+}, shared: true);
+
+$container->set(AdminOrderController::class, function (ContainerInterface $c): AdminOrderController {
+    return new AdminOrderController(
+        $c->get(OrderMapper::class),
         $c->get(TemplateRenderer::class),
         $c->get(CsrfTokenManager::class)
     );
