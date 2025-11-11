@@ -6,6 +6,7 @@ use App\Contracts\ContainerInterface;
 use App\Contracts\EventDispatcherInterface;
 use App\Controller\Admin\DashboardController;
 use App\Controller\Admin\ProductController as AdminProductController;
+use App\Controller\Admin\UserController as AdminUserController;
 use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
@@ -92,6 +93,14 @@ $container->set(DashboardController::class, function (ContainerInterface $c): Da
 $container->set(AdminProductController::class, function (ContainerInterface $c): AdminProductController {
     return new AdminProductController(
         $c->get(ProductMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class)
+    );
+}, shared: true);
+
+$container->set(AdminUserController::class, function (ContainerInterface $c): AdminUserController {
+    return new AdminUserController(
+        $c->get(UserMapper::class),
         $c->get(TemplateRenderer::class),
         $c->get(CsrfTokenManager::class)
     );

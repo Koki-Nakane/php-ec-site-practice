@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controller\Admin\DashboardController;
 use App\Controller\Admin\ProductController as AdminProductController;
+use App\Controller\Admin\UserController as AdminUserController;
 use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
@@ -22,6 +23,7 @@ return function (
     AuthController $auth,
     DashboardController $adminDashboard,
     AdminProductController $adminProducts,
+    AdminUserController $adminUsers,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -40,5 +42,10 @@ return function (
         ['GET',  '/admin/products/edit',    'web:admin', [$adminProducts, 'edit']],
         ['POST', '/admin/products/update',  'web:admin', [$adminProducts, 'update']],
         ['POST', '/admin/products/toggle',  'web:admin', [$adminProducts, 'toggleActive']],
+        ['GET',  '/admin/users',            'web:admin', [$adminUsers, 'index']],
+        ['GET',  '/admin/users/edit',       'web:admin', [$adminUsers, 'edit']],
+        ['POST', '/admin/users/update',     'web:admin', [$adminUsers, 'update']],
+        ['POST', '/admin/users/toggle-admin',     'web:admin', [$adminUsers, 'toggleAdmin']],
+        ['POST', '/admin/users/toggle-deletion',  'web:admin', [$adminUsers, 'toggleDeletion']],
     ];
 };

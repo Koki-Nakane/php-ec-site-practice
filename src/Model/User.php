@@ -87,6 +87,27 @@ final class User
         return $this->address;
     }
 
+    public function rename(string $name): void
+    {
+        $this->setName($name);
+    }
+
+    public function changeEmail(string $email): void
+    {
+        $email = trim($email);
+
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new InvalidArgumentException('メールアドレスの形式が不正です。');
+        }
+
+        $this->email = $email;
+    }
+
+    public function changeAddress(string $address): void
+    {
+        $this->address = trim($address);
+    }
+
     public function isAdmin(): bool
     {
         return $this->isAdmin;
