@@ -1,52 +1,37 @@
-var/log/
 *.log
-# CakePHP 3
-
-/vendor/*
-/config/app.php
-
-/tmp/cache/models/*
-!/tmp/cache/models/empty
-/tmp/cache/persistent/*
-!/tmp/cache/persistent/empty
-/tmp/cache/views/*
-!/tmp/cache/views/empty
-/tmp/sessions/*
-!/tmp/sessions/empty
-/tmp/tests/*
-!/tmp/tests/empty
-
-/logs/*
-!/logs/empty
-
-# CakePHP 2
-
-/app/tmp/*
-/app/Config/core.php
-/app/Config/database.php
-/vendors/*
-
-# Windows Zone.Identifier files
+.php-cs-fixer.cache
 *.Zone.Identifier
-
-# Project specific
-/var/log/
-/var/cache/
-/var/tmp/
-
-# Composer vendor (if not already excluded by other rules)
-/vendor/
-
-# Editor settings
-/.vscode/
-/.idea/
-
-# OS files
 .DS_Store
 Thumbs.db
 
-# Tool caches
-.php-cs-fixer.cache
+vendor/
 
-# Legacy xdebug log at root (will be moved to var/log/)
-/xdebug.log
+# Runtime caches and logs
+var/log/
+var/cache/
+var/tmp/
+logs/
+!/logs/empty
+
+# Legacy tmp directory layout (retain placeholder files)
+tmp/cache/models/
+!tmp/cache/models/empty
+tmp/cache/persistent/
+!tmp/cache/persistent/empty
+tmp/cache/views/
+!tmp/cache/views/empty
+tmp/sessions/
+!tmp/sessions/empty
+tmp/tests/
+!tmp/tests/empty
+
+# Environment specific config (keep sample files elsewhere)
+config/app.php
+
+# IDE / editor settings
+.vscode/
+.idea/
+
+# Misc project files
+xdebug.log
+sandbox/temp.md

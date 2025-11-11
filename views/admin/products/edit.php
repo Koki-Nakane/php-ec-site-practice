@@ -74,7 +74,7 @@ $errors = $form['errors'] ?? [];
 
         <label>
             価格 (円)
-            <input type="text" name="price" value="<?= htmlspecialchars($input['price'], ENT_QUOTES, 'UTF-8'); ?>" inputmode="decimal" pattern="^\\d+(?:\\.\\d{1,2})?$" required>
+            <input type="number" name="price" value="<?= htmlspecialchars($input['price'], ENT_QUOTES, 'UTF-8'); ?>" min="0" step="0.01" inputmode="decimal" required>
         </label>
 
         <label>
