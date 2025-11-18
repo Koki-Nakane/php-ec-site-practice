@@ -16,8 +16,9 @@
 
 - コメント投稿はログイン済みユーザーに限定する。
 - コメント取得 API は公開だが、作成・削除・記事作成などの書き込み系は認証必須。
-- API の認証フローは既存の `AuthMiddleware`/`AdminAuthMiddleware` を再利用する。`api:auth` タグ付きルートは `AuthMiddleware` をパイプラインに差し込み、未ログイン時は JSON 形式で 401 を返す。管理系エンドポイントでは `AuthMiddleware` → `AdminAuthMiddleware` の順で差し込み、認証済みだが管理者ロールでない場合は `AdminAuthMiddleware` が 403 を返す。
-- API ではセッション Cookie によるログイン状態をそのまま利用し、追加のトークン方式は今回導入しない。将来的にトークン認証へ切り替える場合もミドルウェア差し替えで吸収できるよう、ルートの `tag` に `api:public`/`api:auth`/`web:admin` などの情報を持たせる前提で設計する。
+- 閲覧系（`GET /posts` / `GET /posts/{id}`）は `api:public` タグで公開し、`AuthMiddleware` などは差し込まない。
+- 作成系（`POST /posts` や `POST /posts/{id}/comments` など）は `api:auth` タグとし、`AuthMiddleware` だけを差し込んで未ログイン時は JSON の 401 を返す。
+- 更新・削除系（`PATCH /posts/{id}` / `DELETE /posts/{id}`）は新設する `api:auth:owner` タグを使い、`AuthMiddleware` でログインを保証したあとに `PostAuthorOrAdminMiddleware`（仮）のような専用ガードを差し込む。ガードは該当記事の author であれば通し、異なる場合は `AuthController::isAdmin()` を用いて管理者なら許可、そうでなければ 403 JSON を返す。
 
 ## ドメインモデル変更案
 
