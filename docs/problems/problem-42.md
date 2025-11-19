@@ -131,11 +131,41 @@
 ## 書き込み系エンドポイント方針
 
 - **POST /posts**
-  - リクエスト: `title` (必須), `body` (必須), `categories` (任意・配列)。`author` や `status` はサーバ側で決定。
-  - レスポンス: 作成された記事の JSON を `201 Created` とともに返す。`Location` ヘッダで `/posts/{id}` を通知する。
+  - リクエスト: JSON ボディで `title`・`body` を必須、`categories`（カテゴリ slug の配列、最大 10 個）を任意で受け付ける。`status` や `author` を送ってきた場合は 400。
+  - レスポンス: 作成された記事を `201 Created` で返し、`Location: /posts/{id}` を付与する。
+
+    ```json
+    {
+      "id": 42,
+      "author": { "id": 7, "name": "Alice" },
+      "title": "新しい投稿",
+      "body": "本文...",
+      "status": "published",
+      "commentCount": 0,
+      "categories": [
+        { "id": 2, "slug": "release", "name": "リリース" }
+      ],
+      "createdAt": "2025-11-19T10:00:00+09:00",
+      "updatedAt": null
+    }
+    ```
 - **PATCH /posts/{id}**
-  - リクエスト: URL パスの `{id}` を対象 ID とみなす。ボディは差分形式で `title`, `body`, `categories` のいずれかを最低1つ含む。
-  - レスポンス: 更新後の記事 JSON を `200 OK` で返す。
+  - リクエスト: URL パス `{id}` を対象とし、JSON ボディは差分形式。`title`・`body`・`categories`・`status` のいずれかを最低 1 つ含む（複数可）。`categories` は slug 配列で上限 10。`status` は `draft`/`published` のみ。
+  - レスポンス: 反映後の記事を `200 OK` で返す。`updatedAt` は現在時刻に更新された値が入る。
+
+    ```json
+    {
+      "id": 42,
+      "author": { "id": 7, "name": "Alice" },
+      "title": "タイトル修正後",
+      "body": "本文...",
+      "status": "draft",
+      "commentCount": 3,
+      "categories": [],
+      "createdAt": "2025-11-19T10:00:00+09:00",
+      "updatedAt": "2025-11-20T08:30:00+09:00"
+    }
+    ```
 - **DELETE /posts/{id}**
   - リクエストボディは不要。URL パスの `{id}` を対象とする。
   - レスポンス: `204 No Content`。
@@ -194,18 +224,35 @@
 ## バリデーション方針
 
 - **共通**
-  - URL パスの ID は 1 以上の整数。存在しない場合は 404。
-  - クライアントから `author`, `commentCount`, `createdAt`, `updatedAt` などサーバ定義フィールドが送信された場合は 400。
+  - URL パスの ID は 1 以上の整数。`PostMapper` で該当記事が見つからない場合は 404 を返す。
+  - クライアントから `author`, `commentCount`, `createdAt`, `updatedAt` などサーバ定義フィールドが送信された場合は 400（`validation_error`）で弾く。
+  - JSON ボディの Content-Type は `application/json` を必須とし、パースできなければ 415 or 400。
 - **POST /posts**
-  - `title`: 必須。トリム後 1〜255 文字。
-  - `body`: 必須。トリム後 1〜10000 文字。
-  - `categories`: 任意。配列（最大 10 要素）。要素は既知のカテゴリ slug で重複不可。
+  - `title`: トリム後 1〜255 文字。含まれていない／空の場合は `errors.title` にメッセージを設定。
+  - `body`: トリム後 1〜10000 文字。Markdown を許容するが、保存時は XSS 対策のためサニタイズ必須。
+  - `categories`: 任意配列。要素は既知 slug のみ許可、重複があればユニーク化して 422。存在しない slug を含む場合は `errors.categories[n]` に個別エラー。
+  - 受入れ JSON 例:
+
+    ```json
+    {
+      "title": "タイトル",
+      "body": "本文",
+      "categories": ["release", "product"]
+    }
+    ```
 - **PATCH /posts/{id}**
-  - ボディは差分形式で `title`, `body`, `categories`, `status` のいずれかを最低 1 つ含む。
-  - `title`: 送信された場合、POST と同条件。
-  - `body`: 送信された場合、POST と同条件。
-  - `categories`: 送信された場合、POST と同条件。空配列で全解除を許可。
-  - `status`: 送信された場合は `published` / `draft` のみ許可（権限チェックは別途）。
+  - 最低 1 フィールド必須。空オブジェクト `{}` の場合は 400。
+  - `title` / `body`: POST と同条件。
+  - `categories`: POST と同条件。空配列 `[]` なら全カテゴリ解除として扱う。
+  - `status`: `draft` / `published` のみ。`draft` へ変更する際は閲覧権限のあるユーザーかを別途チェック。
+  - 受入れ JSON 例:
+
+    ```json
+    {
+      "title": "修正後タイトル",
+      "categories": []
+    }
+    ```
 
 ## 今後詰める事項
 
