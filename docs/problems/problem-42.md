@@ -9,6 +9,9 @@
 | 新しい記事を作成 | POST | `/posts` | 新規 post を登録する |
 | 特定の記事を更新 | PATCH | `/posts/{id}` | ID 指定の post を部分更新する |
 | 特定の記事を削除 | DELETE | `/posts/{id}` | ID 指定の post を削除する |
+| 記事コメントを一覧取得 | GET | `/posts/{id}/comments` | post ごとのコメントを取得する |
+| コメントを投稿 | POST | `/posts/{id}/comments` | post にひも付くコメントを作成する |
+| コメントを削除 | DELETE | `/comments/{commentId}` | コメント単体を削除する |
 
 > 備考: 更新は全項目上書きではなく差分適用を想定（PATCH）。PUT を選ぶ場合は完全上書きポリシーとの整合性を再確認する。
 
@@ -19,6 +22,7 @@
 - 閲覧系（`GET /posts` / `GET /posts/{id}`）は `api:public` タグで公開し、`AuthMiddleware` などは差し込まない。
 - 作成系（`POST /posts` や `POST /posts/{id}/comments` など）は `api:auth` タグとし、`AuthMiddleware` だけを差し込んで未ログイン時は JSON の 401 を返す。
 - 更新・削除系（`PATCH /posts/{id}` / `DELETE /posts/{id}`）は新設する `api:auth:owner` タグを使い、`AuthMiddleware` でログインを保証したあとに `PostAuthorOrAdminMiddleware`（仮）のような専用ガードを差し込む。ガードは該当記事の author であれば通し、異なる場合は `AuthController::isAdmin()` を用いて管理者なら許可、そうでなければ 403 JSON を返す。
+- コメント削除は `api:auth:comment-owner` タグを想定し、`AuthMiddleware` 後に `CommentAuthorOrAdminMiddleware` を差し込み、コメントの投稿者または管理者のみ許可する。
 
 ## ドメインモデル変更案
 
