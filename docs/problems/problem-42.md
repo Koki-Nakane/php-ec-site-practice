@@ -140,6 +140,57 @@
   - リクエストボディは不要。URL パスの `{id}` を対象とする。
   - レスポンス: `204 No Content`。
 
+## コメント API 詳細
+
+- **GET /posts/{postId}/comments** (`api:public`)
+  - クエリ: `page`/`perPage` を記事一覧と同じ仕様でサポートし、デフォルトは `page=1`・`perPage=20`。古いものから並べ替えたい場合に備えて `sort=createdAt` ＋ `order=asc|desc` も許可する（デフォルトは `desc`）。
+  - レスポンス: 下記の JSON を `200 OK` で返却。
+
+    ```json
+    {
+      "data": [
+        {
+          "id": 10,
+          "postId": 1,
+          "author": { "id": 4, "name": "Bob" },
+          "body": "コメント本文",
+          "createdAt": "2025-11-13T09:15:00+09:00"
+        }
+      ],
+      "meta": {
+        "page": 1,
+        "perPage": 20,
+        "total": 37,
+        "totalPages": 2
+      }
+    }
+    ```
+
+- **POST /posts/{postId}/comments** (`api:auth`)
+  - リクエスト: `body`（必須、トリム後 1〜2000 文字）のみを JSON で受け付ける。`postId` は URL パラメータで指定するためボディには含めない。`author` や `userId` を送ってきた場合は 400 にする。
+  - レスポンス: 新規コメントを `201 Created` で返し、`Location: /comments/{id}` を付与する。
+
+    ```json
+    {
+      "id": 38,
+      "postId": 1,
+      "author": { "id": 4, "name": "Bob" },
+      "body": "投稿した本文",
+      "createdAt": "2025-11-13T09:15:00+09:00"
+    }
+    ```
+
+- **DELETE /comments/{commentId}** (`api:auth:comment-owner`)
+  - リクエストボディは不要。URL の `{commentId}` で対象を特定し、`AuthMiddleware` → `CommentAuthorOrAdminMiddleware` の順でガードする。
+  - レスポンス: 成功時は `204 No Content`。存在しない ID の場合は 404、投稿者・管理者以外が削除しようとした場合は `{"error":"forbidden"}` 形式の 403 を返却。
+
+### コメント系バリデーション
+
+- `postId`/`commentId` は URL パスで 1 以上の整数のみ許可。該当リソースがなければ 404。
+- `body`: トリム後 1〜2000 文字。HTML は許可しない（サニタイザか Markdown の SafeMode を必須化）。
+- 連投対策として 1 ユーザーあたり一定時間のクールダウン（例: 5 秒）を実装する場合は 429 を返す運用を追加で検討。
+- コメント削除は投稿者本人か管理者のみ許可。`CommentAuthorOrAdminMiddleware` はコメント存在チェックと権限チェックを同一トランザクション内で行い、レスポンス形式を API 用の JSON に統一する。
+
 ## バリデーション方針
 
 - **共通**
