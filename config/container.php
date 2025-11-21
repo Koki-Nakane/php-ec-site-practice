@@ -12,8 +12,10 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PostController;
 use App\Infrastructure\Container;
 use App\Infrastructure\EventDispatcher;
+use App\Infrastructure\Middleware\CommentAuthorOrAdminMiddleware;
 use App\Infrastructure\Middleware\PostAuthorOrAdminMiddleware;
 use App\Listener\LogUserCreatedListener;
 use App\Listener\SendWelcomeEmailListener;
@@ -127,10 +129,27 @@ $container->set(AdminOrderController::class, function (ContainerInterface $c): A
     );
 }, shared: true);
 
+$container->set(PostController::class, function (ContainerInterface $c): PostController {
+    return new PostController(
+        $c->get(PostMapper::class),
+        $c->get(CommentMapper::class),
+        $c->get(AuthController::class),
+        $c->get(UserMapper::class),
+        $c->get(\PDO::class)
+    );
+}, shared: true);
+
 $container->set(PostAuthorOrAdminMiddleware::class, function (ContainerInterface $c): PostAuthorOrAdminMiddleware {
     return new PostAuthorOrAdminMiddleware(
         $c->get(AuthController::class),
         $c->get(PostMapper::class)
+    );
+}, shared: true);
+
+$container->set(CommentAuthorOrAdminMiddleware::class, function (ContainerInterface $c): CommentAuthorOrAdminMiddleware {
+    return new CommentAuthorOrAdminMiddleware(
+        $c->get(AuthController::class),
+        $c->get(\PDO::class)
     );
 }, shared: true);
 

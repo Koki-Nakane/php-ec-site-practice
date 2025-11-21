@@ -110,11 +110,12 @@ final class PostMapper
         try {
             $this->pdo->beginTransaction();
 
-            $sql = 'INSERT INTO posts (title, slug, content, status, comment_count, created_at, updated_at)
-                    VALUES (:title, :slug, :content, :status, :comment_count, :created_at, :updated_at)';
+            $sql = 'INSERT INTO posts (user_id, title, slug, content, status, comment_count, created_at, updated_at)
+                VALUES (:user_id, :title, :slug, :content, :status, :comment_count, :created_at, :updated_at)';
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
+            ':user_id' => $post->getAuthorId(),
                 ':title' => $post->getTitle(),
                 ':slug' => $post->getSlug(),
                 ':content' => $post->getContent(),
@@ -158,7 +159,8 @@ final class PostMapper
             $this->pdo->beginTransaction();
 
             $sql = 'UPDATE posts
-                    SET title = :title,
+                    SET user_id = :user_id,
+                        title = :title,
                         slug = :slug,
                         content = :content,
                         status = :status,
@@ -167,6 +169,7 @@ final class PostMapper
                     WHERE id = :id';
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
+                ':user_id' => $post->getAuthorId(),
                 ':title' => $post->getTitle(),
                 ':slug' => $post->getSlug(),
                 ':content' => $post->getContent(),
@@ -199,7 +202,7 @@ final class PostMapper
 
     private function baseSelectSql(): string
     {
-        return 'SELECT p.id, p.title, p.slug, p.content, p.status, p.comment_count, p.created_at, p.updated_at, ' .
+        return 'SELECT p.id, p.user_id, p.title, p.slug, p.content, p.status, p.comment_count, p.created_at, p.updated_at, ' .
             'c.id AS category_id, c.name AS category_name, c.slug AS category_slug ' .
             'FROM posts p ' .
             'LEFT JOIN post_categories pc ON pc.post_id = p.id ' .
@@ -397,11 +400,13 @@ final class PostMapper
         $id = isset($row['id']) ? (int) $row['id'] : null;
         $status = (string) ($row['status'] ?? 'published');
         $commentCount = isset($row['comment_count']) ? (int) $row['comment_count'] : 0;
+        $authorId = array_key_exists('user_id', $row) && $row['user_id'] !== null ? (int) $row['user_id'] : null;
 
         return new Post(
             (string) ($row['title'] ?? ''),
             (string) ($row['content'] ?? ''),
             $slug,
+            $authorId,
             $id,
             $createdAt,
             $updatedAt,

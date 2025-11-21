@@ -69,15 +69,8 @@ final class PostAuthorOrAdminMiddleware implements MiddlewareInterface
             return false;
         }
 
-        if (method_exists($post, 'getAuthorId')) {
-            /** @var callable $callable */
-            $callable = [$post, 'getAuthorId'];
-            $authorId = $callable();
-            if (is_int($authorId)) {
-                return $authorId === $userId;
-            }
-        }
+        $authorId = $post->getAuthorId();
 
-        return false;
+        return $authorId !== null && $authorId === $userId;
     }
 }

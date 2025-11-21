@@ -35,3 +35,4 @@ config/app.php
 # Misc project files
 xdebug.log
 sandbox/temp.md
+.phpunit.cache/

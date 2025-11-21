@@ -22,7 +22,7 @@
 - 閲覧系（`GET /posts` / `GET /posts/{id}`）は `api:public` タグで公開し、`AuthMiddleware` などは差し込まない。
 - 作成系（`POST /posts` や `POST /posts/{id}/comments` など）は `api:auth` タグとし、`AuthMiddleware` だけを差し込んで未ログイン時は JSON の 401 を返す。
 - 更新・削除系（`PATCH /posts/{id}` / `DELETE /posts/{id}`）は新設する `api:auth:owner` タグを使い、`AuthMiddleware` でログインを保証したあとに `PostAuthorOrAdminMiddleware`（仮）のような専用ガードを差し込む。ガードは該当記事の author であれば通し、異なる場合は `AuthController::isAdmin()` を用いて管理者なら許可、そうでなければ 403 JSON を返す。
-- コメント削除は `api:auth:comment-owner` タグを想定し、`AuthMiddleware` 後に `CommentAuthorOrAdminMiddleware` を差し込み、コメントの投稿者または管理者のみ許可する。
+- コメント削除は `api:auth:comment-owner` タグを想定し、`AuthMiddleware` 後に `CommentAuthorOrAdminMiddleware` を差し込み、コメントの投稿者または管理者のみ許可する。判定は `comments.user_id` とログインユーザー ID を突き合わせるだけで完結させる。
 
 ## ドメインモデル変更案
 
@@ -31,13 +31,14 @@
 	- `$createdAt` の型を `DateTimeImmutable` に変更。
 	- `private ?DateTimeImmutable $updatedAt` プロパティを追加し、更新時に現在時刻を反映。
   - `private string $slug` プロパティを追加し、URL 生成に使う一意の識別子として扱う。
+  - `private ?int $authorId` を保持し、`users.id` と結び付けて権限判定や API 応答の author 情報に利用する。
   - `private string $status` / `private int $commentCount` を追加し、公開状態とコメント数をドメインオブジェクトで保持する。
   - `private array $categories` プロパティを追加し、`Category` 値オブジェクト（id/slug/name を保持予定）の配列として管理。
   - カテゴリをまとめて差し替える `setCategories(array $categories): void` と取得用 `getCategories(): array` を実装し、`PostMapper` からセットする運用にする。
 - `Comment` クラス
-	- 同様に `DateTimeImmutable` を採用して日時型を統一。
-	- コメント投稿はログイン済みユーザーのみ許可し、`User` オブジェクトを参照（`private User $author`）。
-	- コメント時点のユーザー情報は常に最新化する方針のため、名前のスナップショット列は持たない。
+  - 同様に `DateTimeImmutable` を採用して日時型を統一。
+  - コメント投稿はログイン済みユーザーのみ許可し、`user_id` で `User` を参照する。
+  - コメント一覧・詳細のレスポンスは常に `users.name` をリアルタイム参照で組み立て、スナップショットは保持しない。
 - `Category` クラス
   - `private string $slug` プロパティを追加し、カテゴリの表示名と分離して管理する。
   - `Post` と同様に `DateTimeImmutable` へ移行する必要は現状なし。
@@ -48,13 +49,13 @@
 	- `ON UPDATE CURRENT_TIMESTAMP` は使用せず、アプリ側で更新を管理。
   - `slug` カラム（VARCHAR 255・UNIQUE）を追加し、記事の公開 URL を一意に識別する。
   - `status`（VARCHAR 32・デフォルト `published`）と `comment_count`（INT UNSIGNED・デフォルト 0）を追加し、API で返却する値を保持。
+  - `user_id`（INT・NULL 可）を追加し、`users.id` への外部キー制約（`ON DELETE SET NULL`）で記事作者を追跡する。
 - `post_categories` テーブル（中間テーブル）:
   - `post_id` / `category_id` の複合主キー。各 `post_id` に対して `category_id` は一意。
   - JOIN でカテゴリ一覧をまとめて取得する前提なので、`PostMapper` での一括 INSERT/DELETE ができるようにする。
 - `comments` テーブル:
-	- 今回は編集機能を提供しないため `updated_at` カラムは追加しない。
-	- 新たに `user_id`（NOT NULL）を追加し、`users.id` への外部キー制約を設定。
-	- これに伴い `author_name` は廃止予定、表示名は `users` テーブルから取得。
+  - 今回は編集機能を提供しないため `updated_at` カラムは追加しない。
+  - `user_id`（初期は NULL 許容、将来的に NOT NULL 化）を追加し、`users.id` への外部キー制約を設定。
 - `categories` テーブル:
   - `slug` カラム（VARCHAR 255・UNIQUE）を追加し、表示名と URL 用識別子を分離する。
 - 既存データ:
@@ -256,7 +257,7 @@
 
 ## 今後詰める事項
 
-1. **ルーティング/コントローラ設計**: 既存ルートとの整合性、認証や CSRF 保護の要否、公開範囲。
+1. **ルーティング/コントローラ設計**: 既存ルートとの整合性、認証や CSRF 保護の要否、公開範囲。`config/routes.php` には `/posts` 系エンドポイントを正規表現マッチで登録済み。
 2. **例外・エラーハンドリング**: ドメイン例外とインフラ例外の扱い、HTTP ステータスの割り当て、エラーメッセージ形式。
 3. **テスト戦略**: ユニット・統合テストでカバーすべきシナリオ（一覧取得、部分更新、バリデーションエラー、削除済みの参照など）。
 4. **ドキュメント更新**: README や API リファレンス、テストシナリオへの追記、Postman コレクションの有無。
