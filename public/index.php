@@ -10,14 +10,17 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PostController;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\ResponseEmitter;
 use App\Infrastructure\Middleware\AdminAuthMiddleware;
 use App\Infrastructure\Middleware\AuthMiddleware;
+use App\Infrastructure\Middleware\CommentAuthorOrAdminMiddleware;
 use App\Infrastructure\Middleware\ErrorHandlerMiddleware;
 use App\Infrastructure\Middleware\LoggingMiddleware;
 use App\Infrastructure\Middleware\Pipeline;
+use App\Infrastructure\Middleware\PostAuthorOrAdminMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 session_start();
@@ -44,16 +47,29 @@ $adminProducts = $container->get(AdminProductController::class);
 $adminOrders = $container->get(AdminOrderController::class);
 /** @var AdminUserController $adminUsers */
 $adminUsers = $container->get(AdminUserController::class);
+/** @var PostController $postsController */
+$postsController = $container->get(PostController::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
 
-$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers);
+$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController);
 
 // ルート解決
 $route = null;
 foreach ($routes as $r) {
-    if ($r[0] === $request->method && $r[1] === $request->path) {
+    [$method, $path] = $r;
+    $isPattern = $r[4] ?? false;
+
+    if ($method !== $request->method) {
+        continue;
+    }
+
+    $matched = $isPattern
+        ? preg_match($path, $request->path) === 1
+        : $path === $request->path;
+
+    if ($matched) {
         $route = $r;
         break;
     }
@@ -82,6 +98,14 @@ if ($tag === 'web:auth') {
 }
 if ($tag === 'api:auth') {
     $pipeline->pipe(new AuthMiddleware($auth, '/login', true));
+}
+if ($tag === 'api:auth:owner') {
+    $pipeline->pipe(new AuthMiddleware($auth, '/login', true));
+    $pipeline->pipe($container->get(PostAuthorOrAdminMiddleware::class));
+}
+if ($tag === 'api:auth:comment-owner') {
+    $pipeline->pipe(new AuthMiddleware($auth, '/login', true));
+    $pipeline->pipe($container->get(CommentAuthorOrAdminMiddleware::class));
 }
 if ($tag === 'web:admin') {
     $pipeline->pipe(new AuthMiddleware($auth, '/login', false));

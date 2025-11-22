@@ -14,6 +14,7 @@ final class Request
         public readonly array $body = [],
         public readonly array $headers = [],
         public readonly array $attributes = [],
+        public readonly ?string $rawBody = null,
     ) {
     }
 
@@ -39,12 +40,18 @@ final class Request
         /** @var array<string,mixed> $body */
         $body = $_POST;
 
+        $rawBody = file_get_contents('php://input');
+        if ($rawBody === false) {
+            $rawBody = null;
+        }
+
         return new self(
             method: $method,
             path: $path,
             query: $query,
             body: $body,
             headers: $headers,
+            rawBody: $rawBody,
         );
     }
 }

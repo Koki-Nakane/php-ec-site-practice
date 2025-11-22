@@ -10,12 +10,13 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PostController;
 use App\Http\Request;
 use App\Http\Response;
 
 /**
  * Build route table.
- * @return array{0:string,1:string,2:string,3:callable(Request):Response}[]
+ * @return array{0:string,1:string,2:string,3:callable(Request):Response,4?:bool}[]
  */
 return function (
     HomeController $home,
@@ -26,6 +27,7 @@ return function (
     AdminProductController $adminProducts,
     AdminOrderController $adminOrders,
     AdminUserController $adminUsers,
+    PostController $posts,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -53,5 +55,15 @@ return function (
         ['POST', '/admin/users/update',     'web:admin', [$adminUsers, 'update']],
         ['POST', '/admin/users/toggle-admin',     'web:admin', [$adminUsers, 'toggleAdmin']],
         ['POST', '/admin/users/toggle-deletion',  'web:admin', [$adminUsers, 'toggleDeletion']],
+
+        // Post API (Problem 42)
+        ['GET', '/posts', 'api:public', [$posts, 'index']],
+        ['GET', '#^/posts/\d+$#', 'api:public', [$posts, 'show'], true],
+        ['POST', '/posts', 'api:auth', [$posts, 'store']],
+        ['PATCH', '#^/posts/\d+$#', 'api:auth:owner', [$posts, 'update'], true],
+        ['DELETE', '#^/posts/\d+$#', 'api:auth:owner', [$posts, 'destroy'], true],
+        ['GET', '#^/posts/\d+/comments$#', 'api:public', [$posts, 'comments'], true],
+        ['POST', '#^/posts/\d+/comments$#', 'api:auth', [$posts, 'storeComment'], true],
+        ['DELETE', '#^/comments/\d+$#', 'api:auth:comment-owner', [$posts, 'deleteComment'], true],
     ];
 };

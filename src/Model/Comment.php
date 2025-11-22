@@ -4,26 +4,28 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use DateTimeImmutable;
+
 final class Comment
 {
     private ?int $id = null;
     private int $postId;
-    private string $authorName;
+    private ?int $userId;
     private string $content;
-    private \DateTime $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct(
         int $postId,
-        string $authorName,
+        ?int $userId,
         string $content,
         ?int $id = null,
-        ?\DateTime $createdAt = null
+        ?DateTimeImmutable $createdAt = null
     ) {
         $this->postId = $postId;
-        $this->authorName = $authorName;
+        $this->userId = $userId;
         $this->content = $content;
         $this->id = $id;
-        $this->createdAt = $createdAt ?? new \DateTime();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -36,9 +38,9 @@ final class Comment
         return $this->postId;
     }
 
-    public function getAuthorName(): string
+    public function getUserId(): ?int
     {
-        return $this->authorName;
+        return $this->userId;
     }
 
     public function getContent(): string
@@ -46,7 +48,7 @@ final class Comment
         return $this->content;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

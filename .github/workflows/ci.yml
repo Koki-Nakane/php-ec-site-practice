@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
   push:
-    branches: [ "*" ]
+    branches: [ main, "feature/**" ]
 
 jobs:
   quality:
@@ -20,7 +20,7 @@ jobs:
             php-version: '8.3'
             coverage: none
             tools: composer
-            extensions: pdo_mysql
+            extensions: mbstring, dom, pdo_mysql, zip
 
       - name: Get Composer Cache Directory
         id: composer-cache
@@ -37,8 +37,5 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: PHP-CS-Fixer (dry-run)
-        run: vendor/bin/php-cs-fixer fix --dry-run --diff
-
-      - name: PHPStan
-        run: composer run stan
+      - name: Run formatter, static analysis, and tests
+        run: composer check

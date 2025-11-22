@@ -12,11 +12,16 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PostController;
 use App\Infrastructure\Container;
 use App\Infrastructure\EventDispatcher;
+use App\Infrastructure\Middleware\CommentAuthorOrAdminMiddleware;
+use App\Infrastructure\Middleware\PostAuthorOrAdminMiddleware;
 use App\Listener\LogUserCreatedListener;
 use App\Listener\SendWelcomeEmailListener;
+use App\Mapper\CommentMapper;
 use App\Mapper\OrderMapper;
+use App\Mapper\PostMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
@@ -42,6 +47,14 @@ $container->set(UserMapper::class, function (ContainerInterface $c): UserMapper 
 
 $container->set(ProductMapper::class, function (ContainerInterface $c): ProductMapper {
     return new ProductMapper($c->get(\PDO::class));
+}, shared: true);
+
+$container->set(PostMapper::class, function (ContainerInterface $c): PostMapper {
+    return new PostMapper($c->get(\PDO::class));
+}, shared: true);
+
+$container->set(CommentMapper::class, function (ContainerInterface $c): CommentMapper {
+    return new CommentMapper($c->get(\PDO::class));
 }, shared: true);
 
 $container->set(OrderMapper::class, function (ContainerInterface $c): OrderMapper {
@@ -113,6 +126,30 @@ $container->set(AdminOrderController::class, function (ContainerInterface $c): A
         $c->get(OrderMapper::class),
         $c->get(TemplateRenderer::class),
         $c->get(CsrfTokenManager::class)
+    );
+}, shared: true);
+
+$container->set(PostController::class, function (ContainerInterface $c): PostController {
+    return new PostController(
+        $c->get(PostMapper::class),
+        $c->get(CommentMapper::class),
+        $c->get(AuthController::class),
+        $c->get(UserMapper::class),
+        $c->get(\PDO::class)
+    );
+}, shared: true);
+
+$container->set(PostAuthorOrAdminMiddleware::class, function (ContainerInterface $c): PostAuthorOrAdminMiddleware {
+    return new PostAuthorOrAdminMiddleware(
+        $c->get(AuthController::class),
+        $c->get(PostMapper::class)
+    );
+}, shared: true);
+
+$container->set(CommentAuthorOrAdminMiddleware::class, function (ContainerInterface $c): CommentAuthorOrAdminMiddleware {
+    return new CommentAuthorOrAdminMiddleware(
+        $c->get(AuthController::class),
+        $c->get(\PDO::class)
     );
 }, shared: true);
 
