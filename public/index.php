@@ -11,16 +11,19 @@ use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PostController;
+use App\Controller\SecurityController;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\ResponseEmitter;
 use App\Infrastructure\Middleware\AdminAuthMiddleware;
 use App\Infrastructure\Middleware\AuthMiddleware;
 use App\Infrastructure\Middleware\CommentAuthorOrAdminMiddleware;
+use App\Infrastructure\Middleware\CsrfProtectionMiddleware;
 use App\Infrastructure\Middleware\ErrorHandlerMiddleware;
 use App\Infrastructure\Middleware\LoggingMiddleware;
 use App\Infrastructure\Middleware\Pipeline;
 use App\Infrastructure\Middleware\PostAuthorOrAdminMiddleware;
+use App\Service\CsrfTokenManager;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 session_start();
@@ -49,11 +52,15 @@ $adminOrders = $container->get(AdminOrderController::class);
 $adminUsers = $container->get(AdminUserController::class);
 /** @var PostController $postsController */
 $postsController = $container->get(PostController::class);
+/** @var SecurityController $securityController */
+$securityController = $container->get(SecurityController::class);
+/** @var CsrfTokenManager $csrfTokens */
+$csrfTokens = $container->get(CsrfTokenManager::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
 
-$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController);
+$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController, $securityController);
 
 // ルート解決
 $route = null;
@@ -110,6 +117,14 @@ if ($tag === 'api:auth:comment-owner') {
 if ($tag === 'web:admin') {
     $pipeline->pipe(new AuthMiddleware($auth, '/login', false));
     $pipeline->pipe(new AdminAuthMiddleware($auth));
+}
+
+if (str_starts_with($tag, 'api:') && $tag !== 'api:public') {
+    $pipeline->pipe(new CsrfProtectionMiddleware($csrfTokens, 'api'));
+} elseif ($tag === 'web:admin') {
+    $pipeline->pipe(new CsrfProtectionMiddleware($csrfTokens, 'admin'));
+} elseif ($tag === 'web:auth' || $tag === 'web:public') {
+    $pipeline->pipe(new CsrfProtectionMiddleware($csrfTokens, 'web'));
 }
 
 $response = $pipeline->process($request, $handler);

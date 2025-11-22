@@ -70,11 +70,6 @@ final class ProductController
             return Response::redirect('/admin/products', 303);
         }
 
-        if (!$this->csrfTokens->validate($this->tokenId('update', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度お試しください。');
-            return Response::redirect('/admin/products/edit?id=' . $id, 303);
-        }
-
         $input = $this->sanitizeInput($request->body);
         [$errors, $normalized] = $this->validateInput($input);
         if ($errors !== []) {
@@ -108,11 +103,6 @@ final class ProductController
         if ($id === null) {
             $this->flash('error', '不正なリクエストです。');
             return Response::redirect('/admin/products', 303);
-        }
-
-        if (!$this->csrfTokens->validate($this->tokenId('toggle', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度お試しください。');
-            return Response::redirect('/admin/products/edit?id=' . $id, 303);
         }
 
         $product = $this->products->findIncludingDeleted($id);

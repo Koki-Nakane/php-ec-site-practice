@@ -98,11 +98,6 @@ final class OrderController
             return Response::redirect('/admin/orders', 303);
         }
 
-        if (!$this->csrfTokens->validate($this->tokenId('update', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度送信してください。');
-            return Response::redirect('/admin/orders/edit?id=' . $id, 303);
-        }
-
         $input = $this->sanitizeInput($request->body);
         [$errors, $normalized] = $this->validateInput($input);
         if ($errors !== []) {
@@ -137,11 +132,6 @@ final class OrderController
         if ($id === null) {
             $this->flash('error', '不正なリクエストです。');
             return Response::redirect('/admin/orders', 303);
-        }
-
-        if (!$this->csrfTokens->validate($this->tokenId('toggle_deletion', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度送信してください。');
-            return Response::redirect('/admin/orders/edit?id=' . $id, 303);
         }
 
         $now = new DateTimeImmutable();

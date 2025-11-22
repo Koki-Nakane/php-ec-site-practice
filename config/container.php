@@ -13,6 +13,7 @@ use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PostController;
+use App\Controller\SecurityController;
 use App\Infrastructure\Container;
 use App\Infrastructure\EventDispatcher;
 use App\Infrastructure\Middleware\CommentAuthorOrAdminMiddleware;
@@ -75,11 +76,17 @@ $container->set(TemplateRenderer::class, function (): TemplateRenderer {
 
 // Controllers (shared)
 $container->set(AuthController::class, function (ContainerInterface $c): AuthController {
-    return new AuthController($c->get(UserMapper::class));
+    return new AuthController(
+        $c->get(UserMapper::class),
+        $c->get(CsrfTokenManager::class)
+    );
 }, shared: true);
 
 $container->set(HomeController::class, function (ContainerInterface $c): HomeController {
-    return new HomeController($c->get(ProductMapper::class));
+    return new HomeController(
+        $c->get(ProductMapper::class),
+        $c->get(CsrfTokenManager::class)
+    );
 }, shared: true);
 
 $container->set(OrderController::class, function (ContainerInterface $c): OrderController {
@@ -137,6 +144,10 @@ $container->set(PostController::class, function (ContainerInterface $c): PostCon
         $c->get(UserMapper::class),
         $c->get(\PDO::class)
     );
+}, shared: true);
+
+$container->set(SecurityController::class, function (ContainerInterface $c): SecurityController {
+    return new SecurityController($c->get(CsrfTokenManager::class));
 }, shared: true);
 
 $container->set(PostAuthorOrAdminMiddleware::class, function (ContainerInterface $c): PostAuthorOrAdminMiddleware {

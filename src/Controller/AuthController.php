@@ -8,15 +8,19 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Mapper\UserMapper;
 use App\Model\User;
+use App\Service\CsrfTokenManager;
 
 final class AuthController
 {
     private UserMapper $userMapper;
+    private CsrfTokenManager $csrfTokens;
 
     public function __construct(
-        UserMapper $userMapper
+        UserMapper $userMapper,
+        CsrfTokenManager $csrfTokens
     ) {
         $this->userMapper = $userMapper;
+        $this->csrfTokens = $csrfTokens;
     }
 
     public function login(string $email, string $password): bool
@@ -79,6 +83,7 @@ final class AuthController
         unset($_SESSION['flash']);
 
         $redirect = $this->sanitizeRedirect($request->query['redirect'] ?? '/');
+        $csrfToken = $this->csrfTokens->issue('login_form');
 
         ob_start();
         ?>
@@ -96,6 +101,7 @@ final class AuthController
                 <p style="color:red;">※ <?php echo htmlspecialchars((string)$m, ENT_QUOTES, 'UTF-8'); ?></p>
             <?php endforeach; ?>
             <form action="/login" method="post">
+                <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <label>Email: <input type="email" name="email" required></label><br>
                 <label>Password: <input type="password" name="password" required></label><br>
                 <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect, ENT_QUOTES, 'UTF-8'); ?>">

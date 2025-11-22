@@ -82,11 +82,6 @@ final class UserController
             return Response::redirect('/admin/users', 303);
         }
 
-        if (!$this->csrfTokens->validate($this->tokenId('update', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度送信してください。');
-            return Response::redirect('/admin/users/edit?id=' . $id, 303);
-        }
-
         $input = $this->sanitizeInput($request->body);
         [$errors, $normalized] = $this->validateInput($input);
         if ($errors !== []) {
@@ -132,11 +127,6 @@ final class UserController
             return Response::redirect('/admin/users', 303);
         }
 
-        if (!$this->csrfTokens->validate($this->tokenId('toggle_admin', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度送信してください。');
-            return Response::redirect('/admin/users/edit?id=' . $id, 303);
-        }
-
         $user = $this->users->find($id);
         if ($user === null) {
             $this->flash('error', '指定されたユーザーが見つかりません。');
@@ -167,11 +157,6 @@ final class UserController
         if ($id === null) {
             $this->flash('error', '不正なリクエストです。');
             return Response::redirect('/admin/users', 303);
-        }
-
-        if (!$this->csrfTokens->validate($this->tokenId('toggle_deletion', $id), $request->body['_token'] ?? null)) {
-            $this->flash('error', 'フォームの有効期限が切れました。もう一度送信してください。');
-            return Response::redirect('/admin/users/edit?id=' . $id, 303);
         }
 
         $user = $this->users->find($id);

@@ -65,6 +65,13 @@ docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-pract
 
 詳しいリクエスト例やレスポンス形式は `docs/problems/problem-42.md` を参照してください。
 
+## CSRF 対策
+
+- POST / PATCH / DELETE など状態を変更するすべてのルートは CSRF ミドルウェアを通過します。
+- Web フォームは必ず `<input type="hidden" name="_token" value="...">` を含める必要があります。トークンはコントローラから `CsrfTokenManager::issue()` で払い出されます。
+- JSON API クライアントは `GET /csrf-token` を呼んで `{"token":"..."}` を取得し、以後のリクエストヘッダー `X-CSRF-Token` に同じ値をセットしてください（単一使用）。
+- トークンが欠落・期限切れの場合、Web ルートは 303 リダイレクトとフラッシュメッセージ、API ルートは 419 JSON（`{"error":"invalid_csrf_token"}`）を返します。
+
 ## 旧 .php 直リンクからの移行
 
 以前は `login.php` や `order_complete.php` など、ルート直下の `.php` に直接アクセスしていましたが現在は削除済みです。利用者は次のルートを参照してください。
