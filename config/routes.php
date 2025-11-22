@@ -11,6 +11,7 @@ use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PostController;
+use App\Controller\SecurityController;
 use App\Http\Request;
 use App\Http\Response;
 
@@ -28,6 +29,7 @@ return function (
     AdminOrderController $adminOrders,
     AdminUserController $adminUsers,
     PostController $posts,
+    SecurityController $security,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -65,5 +67,8 @@ return function (
         ['GET', '#^/posts/\d+/comments$#', 'api:public', [$posts, 'comments'], true],
         ['POST', '#^/posts/\d+/comments$#', 'api:auth', [$posts, 'storeComment'], true],
         ['DELETE', '#^/comments/\d+$#', 'api:auth:comment-owner', [$posts, 'deleteComment'], true],
+
+        // CSRF token endpoint
+        ['GET', '/csrf-token', 'api:public', [$security, 'csrfToken']],
     ];
 };

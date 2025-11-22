@@ -7,17 +7,23 @@ namespace App\Controller;
 use App\Http\Request;
 use App\Http\Response;
 use App\Mapper\ProductMapper;
+use App\Service\CsrfTokenManager;
 
 final class HomeController
 {
-    public function __construct(private ProductMapper $products)
-    {
+    public function __construct(
+        private ProductMapper $products,
+        private CsrfTokenManager $csrfTokens
+    ) {
     }
 
     public function index(Request $request): Response
     {
         $items = $this->products->findAll();
         $isLoggedIn = isset($_SESSION['user_id']);
+        $flash = $_SESSION['error_message'] ?? null;
+        unset($_SESSION['error_message']);
+        $csrfToken = $this->csrfTokens->issue('cart_form');
 
         ob_start();
         ?>
@@ -47,6 +53,9 @@ final class HomeController
                 </nav>
             </header>
             <h1>商品一覧</h1>
+            <?php if ($flash !== null): ?>
+                <p style="color:red;">※ <?php echo htmlspecialchars($flash, ENT_QUOTES, 'UTF-8'); ?></p>
+            <?php endif; ?>
             <?php if (empty($items)):?>
                 <p>現在、販売中の商品はありません。</p>
             <?php else:?>
@@ -58,6 +67,7 @@ final class HomeController
                             <p>在庫: <?php echo htmlspecialchars((string)$product->getStock(), ENT_QUOTES, 'UTF-8'); ?>個</p>
                             <p><?php echo nl2br(htmlspecialchars($product->getDescription(), ENT_QUOTES, 'UTF-8')); ?></p>
                             <form action="/add_to_cart" method="post">
+                                <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="product_id" value="<?php echo $product->getId(); ?>">
                                 <label for="quantity-<?php echo $product->getId(); ?>">数量:</label>
                                 <input type="number" id="quantity-<?php echo $product->getId(); ?>" name="quantity" value="1" min="1">

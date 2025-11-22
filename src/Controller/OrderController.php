@@ -45,6 +45,8 @@ final class OrderController
         $userId = $_SESSION['user_id'] ?? null;
         $user = $userId ? $this->users->find((int)$userId) : null;
 
+        $csrfToken = $this->csrfTokens->issue('place_order');
+
         ob_start();
         ?>
         <!DOCTYPE html>
@@ -85,6 +87,7 @@ final class OrderController
             <h3>合計金額: <?php echo htmlspecialchars((string)$cart->getTotalPrice(), ENT_QUOTES, 'UTF-8'); ?>円</h3>
 
             <form action="/place_order" method="post">
+                <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <button type="submit">この内容で注文を確定する</button>
             </form>
 
@@ -264,11 +267,6 @@ final class OrderController
         if ($user === null) {
             $_SESSION['error_message'] = 'ユーザー情報が取得できませんでした。';
             return Response::redirect('/login');
-        }
-
-        if (!$this->csrfTokens->validate('orders_export', $request->body['_token'] ?? null)) {
-            $_SESSION['error_message'] = 'フォームの有効期限が切れました。もう一度お試しください。';
-            return Response::redirect('/orders');
         }
 
         [$month, $monthString] = $this->resolveMonth($request->body['month'] ?? null);
