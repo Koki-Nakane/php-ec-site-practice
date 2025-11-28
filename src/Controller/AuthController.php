@@ -107,6 +107,7 @@ final class AuthController
                 <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect, ENT_QUOTES, 'UTF-8'); ?>">
                 <button type="submit">ログイン</button>
             </form>
+            <p><a href="/password/forgot">パスワードをお忘れの方はこちら</a></p>
         </body>
         </html>
         <?php

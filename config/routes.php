@@ -10,6 +10,7 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PasswordResetController;
 use App\Controller\PostController;
 use App\Controller\SecurityController;
 use App\Http\Request;
@@ -30,6 +31,7 @@ return function (
     AdminUserController $adminUsers,
     PostController $posts,
     SecurityController $security,
+    PasswordResetController $passwordReset,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -37,6 +39,12 @@ return function (
         ['POST', '/add_to_cart',   'web:public', [$cart, 'add']],
         ['GET',  '/login',         'web:public', [$auth, 'showLogin']],
         ['POST', '/login',         'web:public', [$auth, 'handleLogin']],
+        ['GET',  '/password/forgot', 'web:public', [$passwordReset, 'showRequestForm']],
+        ['POST', '/password/forgot', 'web:public', [$passwordReset, 'handleRequest']],
+        ['GET',  '/password/forgot/sent', 'web:public', [$passwordReset, 'showRequestSent']],
+        ['GET',  '/password/reset', 'web:public', [$passwordReset, 'showResetForm']],
+        ['POST', '/password/reset', 'web:public', [$passwordReset, 'handleReset']],
+        ['GET',  '/password/reset/complete', 'web:public', [$passwordReset, 'showResetComplete']],
         ['GET',  '/orders',        'web:auth',   [$order, 'orders']],
         ['POST', '/orders/export', 'web:auth',   [$order, 'exportMonthlyCsv']],
         ['GET',  '/checkout',      'web:auth',   [$order, 'checkout']],

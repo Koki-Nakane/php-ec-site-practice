@@ -108,6 +108,11 @@ final class User
         $this->address = trim($address);
     }
 
+    public function resetPassword(string $plainPassword): void
+    {
+        $this->setPassword($plainPassword);
+    }
+
     public function isAdmin(): bool
     {
         return $this->isAdmin;

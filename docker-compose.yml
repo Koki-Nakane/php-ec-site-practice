@@ -6,6 +6,19 @@ services:
       - "8000:80"
     volumes:
       - .:/var/www/html
+    environment:
+      MAIL_FROM: "no-reply@example.com"
+      MAIL_FROM_NAME: "EC Practice App"
+      MAIL_HOST: "mailhog"
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: ""
+      MAIL_SMTP_AUTH: "false"
+      MAIL_TIMEOUT: "5"
+    depends_on:
+      - db
+      - mailhog
 
   # ★★★ ここから下を追記 ★★★
   # データベース用のdbサービス
@@ -32,6 +45,12 @@ services:
     # ホストPCから直接DBに接続したい場合（例: DBクライアントツールを使う）に設定
     ports:
       - "3306:3306"
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 # ★★★ 一番下にこれを追記 ★★★
 # 名前付きボリュームの定義

@@ -7,7 +7,7 @@
 1. 依存関係をインストール
 	- VS Code の Dev Containers で開くか、ホストで `composer install` を実行します。
 2. コンテナ起動
-	- `docker compose up -d` で `app` (PHP+Apache) / `db` (MariaDB) を起動します。
+	- `docker compose up -d` で `app` (PHP+Apache) / `db` (MariaDB) / `mailhog` (SMTP キャプチャ) を起動します。
 3. データベース初期化
 	- 初回は `database/schema.sql` を流すか、個別マイグレーションを順番に適用します。
 	- 例: `docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/schema.sql`
@@ -18,10 +18,13 @@
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_20_150000_add_user_id_to_comments.sql
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_20_153000_add_user_id_to_posts.sql
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_20_160000_drop_author_name_from_comments.sql
+docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_25_120000_create_password_resets_table.sql
 ```
 
 5. Web へアクセス
 	- `http://localhost:8000/` がフロントページ。API は `http://localhost:8000/posts` などで確認できます。
+6. Mailhog でメール確認
+	- `http://localhost:8025/` を開くと Mailhog の Web UI で送信済みメールを確認できます（SMTP ポートは 1025）。
 
 ## デモデータの投入
 
@@ -69,8 +72,41 @@ docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-pract
 
 - POST / PATCH / DELETE など状態を変更するすべてのルートは CSRF ミドルウェアを通過します。
 - Web フォームは必ず `<input type="hidden" name="_token" value="...">` を含める必要があります。トークンはコントローラから `CsrfTokenManager::issue()` で払い出されます。
-- JSON API クライアントは `GET /csrf-token` を呼んで `{"token":"..."}` を取得し、以後のリクエストヘッダー `X-CSRF-Token` に同じ値をセットしてください（単一使用）。
+- JSON API クライアントは `GET /csrf-token` を呼んで `{"token":"..."}` を取得し、以後のリクエストヘッダー `X-CSRF-Token` に同じ値をセットしてください（セッション内で再利用できます）。
+- トークンはチャネル（`web` / `admin` / `api`）ごとにセッションへ保存され、ミドルウェアが同じチャネル名で照合します。
 - トークンが欠落・期限切れの場合、Web ルートは 303 リダイレクトとフラッシュメッセージ、API ルートは 419 JSON（`{"error":"invalid_csrf_token"}`）を返します。
+
+## パスワード再設定フロー
+
+- `/password/forgot` … 再設定リンク送信用フォーム（メールアドレスを入力）
+- `/password/forgot/sent` … 送信完了メッセージ
+- `/password/reset?token=...` … 新しいパスワード入力（2回入力 + 強度チェック）
+- `/password/reset/complete` … 再設定完了メッセージ
+
+メールは PHPMailer + Mailhog で送信しています。主要な環境変数（`docker-compose.yml` の `app.environment`）は次の通りです。
+
+- `MAIL_HOST` / `MAIL_PORT` … SMTP 接続先（デフォルトは `mailhog:1025`）
+- `MAIL_FROM` / `MAIL_FROM_NAME` … 送信元アドレスと表示名
+- `MAIL_USERNAME` / `MAIL_PASSWORD` … 認証が必要な SMTP を使う場合のみ指定
+- `MAIL_ENCRYPTION` … `tls` / `ssl` など。Mailhog の場合は空欄
+
+Mailhog の UI は `http://localhost:8025/` で確認できます（Docker コンテナ起動後にアクセスしてください）。
+
+## テストユーザーの投入
+
+`scripts/create_test_user.php` を使うと CLI から任意のユーザーを挿入できます。Docker コンテナ内で実行してください。
+
+```bash
+docker compose exec app php scripts/create_test_user.php \
+	--name=test_user \
+	--email=test-user@example.com \
+	--password=TestPass123! \
+	--address="東京都港区テスト1-2-3"
+```
+
+- 既に同じメールアドレスが存在する場合は `--force=1` を付けると上書きされます。
+- `--admin=1` を付けると管理者フラグを立てられます。
+- `--help` でオプション一覧を表示できます。
 
 ## 旧 .php 直リンクからの移行
 

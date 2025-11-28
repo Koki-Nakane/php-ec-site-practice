@@ -23,7 +23,7 @@
 - 作成系（`POST /posts` や `POST /posts/{id}/comments` など）は `api:auth` タグとし、`AuthMiddleware` だけを差し込んで未ログイン時は JSON の 401 を返す。
 - 更新・削除系（`PATCH /posts/{id}` / `DELETE /posts/{id}`）は新設する `api:auth:owner` タグを使い、`AuthMiddleware` でログインを保証したあとに `PostAuthorOrAdminMiddleware`（仮）のような専用ガードを差し込む。ガードは該当記事の author であれば通し、異なる場合は `AuthController::isAdmin()` を用いて管理者なら許可、そうでなければ 403 JSON を返す。
 - コメント削除は `api:auth:comment-owner` タグを想定し、`AuthMiddleware` 後に `CommentAuthorOrAdminMiddleware` を差し込み、コメントの投稿者または管理者のみ許可する。判定は `comments.user_id` とログインユーザー ID を突き合わせるだけで完結させる。
-- 書き込み系は CSRF ミドルウェアを必須化し、フォームは hidden `_token`、API は `X-CSRF-Token` ヘッダーを送る。SPA などは `GET /csrf-token` で JSON 取得後にヘッダーへ設定する（ワンタイムトークン）。
+- 書き込み系は CSRF ミドルウェアを必須化し、フォームは hidden `_token`、API は `X-CSRF-Token` ヘッダーを送る。SPA などは `GET /csrf-token` で JSON 取得後にヘッダーへ設定し、同じセッションでは同一トークンを使い回す。
 
 ## ドメインモデル変更案
 

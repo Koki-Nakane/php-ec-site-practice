@@ -12,6 +12,7 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PasswordResetController;
 use App\Controller\PostController;
 use App\Controller\SecurityController;
 use App\Infrastructure\Container;
@@ -27,7 +28,11 @@ use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
 use App\Service\CsrfTokenManager;
+use App\Service\MailSenderInterface;
 use App\Service\OrderCsvExporter;
+use App\Service\PasswordResetService;
+use App\Service\PasswordValidator;
+use App\Service\PhpMailSender;
 use App\Service\TemplateRenderer;
 
 // Build and return a DI container with core services.
@@ -66,8 +71,55 @@ $container->set(OrderCsvExporter::class, function (ContainerInterface $c): Order
     return new OrderCsvExporter($c->get(OrderMapper::class));
 }, shared: true);
 
+$container->set(MailSenderInterface::class, function (): MailSenderInterface {
+    $env = static function (string $key, ?string $default = null): ?string {
+        $value = $_ENV[$key] ?? getenv($key);
+        if ($value === false || $value === null) {
+            return $default;
+        }
+        $trimmed = trim((string) $value);
+        return $trimmed === '' ? $default : $trimmed;
+    };
+
+    $from = $env('MAIL_FROM', 'no-reply@example.com');
+    $fromName = $env('MAIL_FROM_NAME', 'EC Practice App');
+    $host = $env('MAIL_HOST', 'mailhog');
+    $port = (int) ($env('MAIL_PORT', '1025'));
+    $username = $env('MAIL_USERNAME', '');
+    $password = $env('MAIL_PASSWORD', '');
+    $encryption = $env('MAIL_ENCRYPTION');
+    $timeout = (float) ($env('MAIL_TIMEOUT', '5'));
+
+    $smtpAuthDefault = $username !== '' ? 'true' : 'false';
+    $smtpAuthFlag = strtolower((string) $env('MAIL_SMTP_AUTH', $smtpAuthDefault));
+    $smtpAuth = in_array($smtpAuthFlag, ['1', 'true', 'on'], true);
+
+    return new PhpMailSender(
+        $from,
+        $fromName,
+        $host,
+        $port,
+        $smtpAuth,
+        $username ?: null,
+        $password ?: null,
+        $encryption ?: null,
+        $timeout
+    );
+}, shared: true);
+
 $container->set(CsrfTokenManager::class, function (): CsrfTokenManager {
     return new CsrfTokenManager();
+}, shared: true);
+
+$container->set(PasswordValidator::class, function (): PasswordValidator {
+    return new PasswordValidator();
+}, shared: true);
+
+$container->set(PasswordResetService::class, function (ContainerInterface $c): PasswordResetService {
+    return new PasswordResetService(
+        $c->get(\PDO::class),
+        $c->get(MailSenderInterface::class)
+    );
 }, shared: true);
 
 $container->set(TemplateRenderer::class, function (): TemplateRenderer {
@@ -148,6 +200,15 @@ $container->set(PostController::class, function (ContainerInterface $c): PostCon
 
 $container->set(SecurityController::class, function (ContainerInterface $c): SecurityController {
     return new SecurityController($c->get(CsrfTokenManager::class));
+}, shared: true);
+
+$container->set(PasswordResetController::class, function (ContainerInterface $c): PasswordResetController {
+    return new PasswordResetController(
+        $c->get(UserMapper::class),
+        $c->get(CsrfTokenManager::class),
+        $c->get(PasswordResetService::class),
+        $c->get(PasswordValidator::class)
+    );
 }, shared: true);
 
 $container->set(PostAuthorOrAdminMiddleware::class, function (ContainerInterface $c): PostAuthorOrAdminMiddleware {

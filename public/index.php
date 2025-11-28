@@ -10,6 +10,7 @@ use App\Controller\AuthController;
 use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
+use App\Controller\PasswordResetController;
 use App\Controller\PostController;
 use App\Controller\SecurityController;
 use App\Http\Request;
@@ -54,13 +55,15 @@ $adminUsers = $container->get(AdminUserController::class);
 $postsController = $container->get(PostController::class);
 /** @var SecurityController $securityController */
 $securityController = $container->get(SecurityController::class);
+/** @var PasswordResetController $passwordResetController */
+$passwordResetController = $container->get(PasswordResetController::class);
 /** @var CsrfTokenManager $csrfTokens */
 $csrfTokens = $container->get(CsrfTokenManager::class);
 
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
 
-$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController, $securityController);
+$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController, $securityController, $passwordResetController);
 
 // ルート解決
 $route = null;
