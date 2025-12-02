@@ -62,10 +62,15 @@ final class HomeController
                 <ul>
                     <?php foreach ($items as $product):?>
                         <li>
-                            <h2><?php echo htmlspecialchars($product->getName(), ENT_QUOTES, 'UTF-8'); ?></h2>
+                            <h2>
+                                <a href="/products/<?php echo $product->getId(); ?>">
+                                    <?php echo htmlspecialchars($product->getName(), ENT_QUOTES, 'UTF-8'); ?>
+                                </a>
+                            </h2>
                             <p>価格: <?php echo htmlspecialchars((string)$product->getPrice(), ENT_QUOTES, 'UTF-8'); ?>円</p>
                             <p>在庫: <?php echo htmlspecialchars((string)$product->getStock(), ENT_QUOTES, 'UTF-8'); ?>個</p>
                             <p><?php echo nl2br(htmlspecialchars($product->getDescription(), ENT_QUOTES, 'UTF-8')); ?></p>
+                            <p><a href="/products/<?php echo $product->getId(); ?>#reviews">レビューを確認する</a></p>
                             <form action="/add_to_cart" method="post">
                                 <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="product_id" value="<?php echo $product->getId(); ?>">

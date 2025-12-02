@@ -14,6 +14,7 @@ use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
 use App\Controller\PostController;
+use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
 use App\Infrastructure\Container;
 use App\Infrastructure\EventDispatcher;
@@ -25,6 +26,7 @@ use App\Mapper\CommentMapper;
 use App\Mapper\OrderMapper;
 use App\Mapper\PostMapper;
 use App\Mapper\ProductMapper;
+use App\Mapper\ReviewMapper;
 use App\Mapper\UserMapper;
 use App\Model\Database;
 use App\Service\CsrfTokenManager;
@@ -33,6 +35,7 @@ use App\Service\OrderCsvExporter;
 use App\Service\PasswordResetService;
 use App\Service\PasswordValidator;
 use App\Service\PhpMailSender;
+use App\Service\ReviewService;
 use App\Service\TemplateRenderer;
 
 // Build and return a DI container with core services.
@@ -61,6 +64,10 @@ $container->set(PostMapper::class, function (ContainerInterface $c): PostMapper 
 
 $container->set(CommentMapper::class, function (ContainerInterface $c): CommentMapper {
     return new CommentMapper($c->get(\PDO::class));
+}, shared: true);
+
+$container->set(ReviewMapper::class, function (ContainerInterface $c): ReviewMapper {
+    return new ReviewMapper($c->get(\PDO::class));
 }, shared: true);
 
 $container->set(OrderMapper::class, function (ContainerInterface $c): OrderMapper {
@@ -119,6 +126,13 @@ $container->set(PasswordResetService::class, function (ContainerInterface $c): P
     return new PasswordResetService(
         $c->get(\PDO::class),
         $c->get(MailSenderInterface::class)
+    );
+}, shared: true);
+
+$container->set(ReviewService::class, function (ContainerInterface $c): ReviewService {
+    return new ReviewService(
+        $c->get(ReviewMapper::class),
+        $c->get(\PDO::class)
     );
 }, shared: true);
 
@@ -208,6 +222,16 @@ $container->set(PasswordResetController::class, function (ContainerInterface $c)
         $c->get(CsrfTokenManager::class),
         $c->get(PasswordResetService::class),
         $c->get(PasswordValidator::class)
+    );
+}, shared: true);
+
+$container->set(ProductReviewController::class, function (ContainerInterface $c): ProductReviewController {
+    return new ProductReviewController(
+        $c->get(ProductMapper::class),
+        $c->get(ReviewService::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(CsrfTokenManager::class),
+        $c->get(AuthController::class)
     );
 }, shared: true);
 

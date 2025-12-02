@@ -12,6 +12,7 @@ use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
 use App\Controller\PostController;
+use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
 use App\Http\Request;
 use App\Http\Response;
@@ -32,6 +33,7 @@ return function (
     PostController $posts,
     SecurityController $security,
     PasswordResetController $passwordReset,
+    ProductReviewController $productReviews,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -51,6 +53,12 @@ return function (
         ['POST', '/place_order',   'web:auth',   [$order, 'place']],
         ['GET',  '/order_complete','web:auth',   [$order, 'orderComplete']],
         ['GET',  '/api/products',  'api:public', [$home, 'apiProducts']],
+        ['GET',  '#^/products/\d+$#', 'web:public', [$productReviews, 'show'], true],
+        ['POST', '#^/products/\d+/reviews/form$#', 'web:auth', [$productReviews, 'storeFromForm'], true],
+        ['POST', '#^/reviews/\d+/delete$#', 'web:auth', [$productReviews, 'deleteFromForm'], true],
+        ['GET',  '#^/products/\d+/reviews$#', 'api:public', [$productReviews, 'indexApi'], true],
+        ['POST', '#^/products/\d+/reviews$#', 'api:auth', [$productReviews, 'storeApi'], true],
+        ['DELETE', '#^/reviews/\d+$#', 'api:auth', [$productReviews, 'deleteApi'], true],
         ['GET',  '/admin',                  'web:admin', [$adminDashboard, 'index']],
         ['GET',  '/admin/products',         'web:admin', [$adminProducts, 'index']],
         ['GET',  '/admin/products/edit',    'web:admin', [$adminProducts, 'edit']],

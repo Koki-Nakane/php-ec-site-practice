@@ -11,7 +11,7 @@
 3. データベース初期化
 	- 初回は `database/schema.sql` を流すか、個別マイグレーションを順番に適用します。
 	- 例: `docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/schema.sql`
-4. 最新マイグレーション（Problem 42）
+4. 最新マイグレーション（Problem 42, 44）
 	- コメント・記事の author 対応（`comments.user_id` / `posts.user_id`）は個別マイグレーションを流して反映します。
 
 ```bash
@@ -19,6 +19,7 @@ docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-pract
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_20_153000_add_user_id_to_posts.sql
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_20_160000_drop_author_name_from_comments.sql
 docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_11_25_120000_create_password_resets_table.sql
+docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-practice_db" < database/migrations/2025_12_01_120000_create_product_reviews_table.sql
 ```
 
 5. Web へアクセス
@@ -49,6 +50,7 @@ docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-pract
 ### 従来機能
 
 - GET `/` … 商品一覧（Web 公開）
+- GET `/products/{id}` … 商品詳細 + レビュー一覧（Web 公開）
 - GET `/checkout` … 注文確認（要ログイン）
 - POST `/place_order` … 注文確定（要ログイン）
 - GET `/api/products` … 商品一覧 API（JSON）
@@ -67,6 +69,16 @@ docker compose exec -T db sh -c "mysql -u root -proot_password php-ec-site-pract
 | DELETE | `/comments/{commentId}` | `api:auth:comment-owner` | コメント削除（投稿者/管理者のみ）
 
 詳しいリクエスト例やレスポンス形式は `docs/problems/problem-42.md` を参照してください。
+
+### Problem 44: Product Reviews
+
+| HTTP | Path | 認証タグ | 説明 |
+| --- | --- | --- | --- |
+| GET | `/products/{id}/reviews` | `api:public` | 対象商品のレビュー一覧（`page`/`perPage` クエリ対応、平均評価も含む） |
+| POST | `/products/{id}/reviews` | `api:auth` | レビュー新規投稿（title/comment/rating）※購入済み + 1ユーザー1件制約 |
+| DELETE | `/reviews/{reviewId}` | `api:auth` | レビュー削除（投稿者 or 管理者、ソフトデリート） |
+
+ブラウザ向けには `/products/{id}` でレビューの閲覧・投稿フォームを提供しています。フォーム投稿および API 呼び出しはいずれも CSRF トークンが必要です。
 
 ## CSRF 対策
 
