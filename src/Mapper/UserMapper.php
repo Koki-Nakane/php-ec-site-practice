@@ -138,6 +138,16 @@ final class UserMapper
         $this->log("User updated: ID = {$user->getId()}, Name = {$user->getName()}");
     }
 
+    public function updateLastLogin(int $userId, DateTimeImmutable $when): void
+    {
+        $sql = 'UPDATE users SET last_login_at = :last_login_at WHERE id = :id';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':last_login_at' => $when->format('Y-m-d H:i:s'),
+            ':id' => $userId,
+        ]);
+    }
+
     public function delete(User $user): void
     {
         $id = $user->getId();

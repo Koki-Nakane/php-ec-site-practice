@@ -9,6 +9,7 @@ use App\Http\Response;
 use App\Mapper\UserMapper;
 use App\Model\User;
 use App\Service\CsrfTokenManager;
+use DateTimeImmutable;
 
 final class AuthController
 {
@@ -41,6 +42,15 @@ final class AuthController
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user->getId();
+
+        try {
+            $userId = $user->getId();
+            if ($userId !== null) {
+                $this->userMapper->updateLastLogin($userId, new DateTimeImmutable());
+            }
+        } catch (\Throwable $e) {
+            error_log('Failed to update last_login_at: ' . $e->getMessage());
+        }
 
         return true;
     }
