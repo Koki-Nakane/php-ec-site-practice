@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\Model\Coupon\CouponInterface;
 use Exception;
 
 final class Cart
 {
     private array $cartItems;
+    private ?CouponInterface $coupon = null;
 
     public function __construct()
     {
@@ -58,7 +60,17 @@ final class Cart
         return $this->cartItems;
     }
 
-    public function getTotalPrice(): float
+    public function applyCoupon(CouponInterface $coupon): void
+    {
+        $this->coupon = $coupon;
+    }
+
+    public function removeCoupon(): void
+    {
+        $this->coupon = null;
+    }
+
+    public function getSubtotal(): float
     {
         $totalPrice = 0;
 
@@ -67,5 +79,29 @@ final class Cart
         }
 
         return $totalPrice;
+    }
+
+    public function getDiscountAmount(): float
+    {
+        if ($this->coupon === null) {
+            return 0.0;
+        }
+
+        $subtotal = $this->getSubtotal();
+        $discount = $this->coupon->calculateDiscount($subtotal);
+
+        if ($discount <= 0) {
+            return 0.0;
+        }
+
+        return min($discount, $subtotal);
+    }
+
+    public function getTotalPrice(): float
+    {
+        $subtotal = $this->getSubtotal();
+        $discount = $this->getDiscountAmount();
+
+        return max(0.0, $subtotal - $discount);
     }
 }
