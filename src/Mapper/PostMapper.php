@@ -274,8 +274,8 @@ final class PostMapper
         }
 
         if ($filter->getQuery() !== null) {
-            $conditions[] = '(p.title LIKE :keyword OR p.content LIKE :keyword)';
-            $params[':keyword'] = '%' . $filter->getQuery() . '%';
+            $conditions[] = "(p.title LIKE :keyword ESCAPE '\\' OR p.content LIKE :keyword ESCAPE '\\')";
+            $params[':keyword'] = $this->buildLikePattern($filter->getQuery());
         }
 
         return $conditions === [] ? '' : ' WHERE ' . implode(' AND ', $conditions);
@@ -382,6 +382,13 @@ final class PostMapper
         }
 
         return $posts;
+    }
+
+    private function buildLikePattern(string $keyword): string
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $keyword);
+
+        return '%' . $escaped . '%';
     }
 
     /**
