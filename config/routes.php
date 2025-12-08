@@ -11,6 +11,7 @@ use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
+use App\Controller\PostalCodeController;
 use App\Controller\PostController;
 use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
@@ -34,6 +35,7 @@ return function (
     SecurityController $security,
     PasswordResetController $passwordReset,
     ProductReviewController $productReviews,
+    PostalCodeController $postalCodes,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -41,6 +43,8 @@ return function (
         ['POST', '/add_to_cart',   'web:public', [$cart, 'add']],
         ['GET',  '/login',         'web:public', [$auth, 'showLogin']],
         ['POST', '/login',         'web:public', [$auth, 'handleLogin']],
+        ['GET',  '/register',      'web:public', [$auth, 'showRegister']],
+        ['POST', '/register',      'web:public', [$auth, 'handleRegister']],
         ['GET',  '/password/forgot', 'web:public', [$passwordReset, 'showRequestForm']],
         ['POST', '/password/forgot', 'web:public', [$passwordReset, 'handleRequest']],
         ['GET',  '/password/forgot/sent', 'web:public', [$passwordReset, 'showRequestSent']],
@@ -86,5 +90,8 @@ return function (
 
         // CSRF token endpoint
         ['GET', '/csrf-token', 'api:public', [$security, 'csrfToken']],
+
+        // Postal code lookup (zipcloud)
+        ['GET', '/api/postal-code', 'api:public', [$postalCodes, 'lookup']],
     ];
 };

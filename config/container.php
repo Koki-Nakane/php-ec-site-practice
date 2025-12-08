@@ -13,6 +13,7 @@ use App\Controller\CartController;
 use App\Controller\HomeController;
 use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
+use App\Controller\PostalCodeController;
 use App\Controller\PostController;
 use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
@@ -37,6 +38,7 @@ use App\Service\PasswordValidator;
 use App\Service\PhpMailSender;
 use App\Service\ReviewService;
 use App\Service\TemplateRenderer;
+use App\Service\ZipcloudClient;
 
 // Build and return a DI container with core services.
 $container = new Container();
@@ -122,6 +124,10 @@ $container->set(PasswordValidator::class, function (): PasswordValidator {
     return new PasswordValidator();
 }, shared: true);
 
+$container->set(ZipcloudClient::class, function (): ZipcloudClient {
+    return new ZipcloudClient();
+}, shared: true);
+
 $container->set(PasswordResetService::class, function (ContainerInterface $c): PasswordResetService {
     return new PasswordResetService(
         $c->get(\PDO::class),
@@ -144,7 +150,8 @@ $container->set(TemplateRenderer::class, function (): TemplateRenderer {
 $container->set(AuthController::class, function (ContainerInterface $c): AuthController {
     return new AuthController(
         $c->get(UserMapper::class),
-        $c->get(CsrfTokenManager::class)
+        $c->get(CsrfTokenManager::class),
+        $c->get(PasswordValidator::class)
     );
 }, shared: true);
 
@@ -232,6 +239,12 @@ $container->set(ProductReviewController::class, function (ContainerInterface $c)
         $c->get(TemplateRenderer::class),
         $c->get(CsrfTokenManager::class),
         $c->get(AuthController::class)
+    );
+}, shared: true);
+
+$container->set(PostalCodeController::class, function (ContainerInterface $c): PostalCodeController {
+    return new PostalCodeController(
+        $c->get(ZipcloudClient::class)
     );
 }, shared: true);
 
