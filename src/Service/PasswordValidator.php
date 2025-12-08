@@ -6,7 +6,7 @@ namespace App\Service;
 
 final class PasswordValidator
 {
-    private const MIN_LENGTH = 8;
+    public const MIN_LENGTH = 8;
 
     /**
      * @return string[] list of validation error messages
@@ -50,5 +50,13 @@ final class PasswordValidator
         }
 
         return $errors;
+    }
+
+    public function getPolicyDescription(): string
+    {
+        return sprintf(
+            'パスワードは最低 %d 文字以上で、英大文字・英小文字・数字・記号のうち2種類以上を組み合わせてください。',
+            self::MIN_LENGTH
+        );
     }
 }
