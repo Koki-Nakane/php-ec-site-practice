@@ -15,6 +15,7 @@ use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
 use App\Controller\PostalCodeController;
 use App\Controller\PostController;
+use App\Controller\PostPageController;
 use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
 use App\Infrastructure\Container;
@@ -216,6 +217,14 @@ $container->set(PostController::class, function (ContainerInterface $c): PostCon
         $c->get(AuthController::class),
         $c->get(UserMapper::class),
         $c->get(\PDO::class)
+    );
+}, shared: true);
+
+$container->set(PostPageController::class, function (ContainerInterface $c): PostPageController {
+    return new PostPageController(
+        $c->get(PostMapper::class),
+        $c->get(TemplateRenderer::class),
+        $c->get(AuthController::class),
     );
 }, shared: true);
 
