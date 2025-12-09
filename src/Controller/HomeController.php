@@ -33,7 +33,7 @@ final class HomeController
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>商品一覧</title>
-            <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
             <style>
                 body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 2rem; }
                 .site-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
