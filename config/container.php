@@ -159,7 +159,8 @@ $container->set(AuthController::class, function (ContainerInterface $c): AuthCon
 $container->set(HomeController::class, function (ContainerInterface $c): HomeController {
     return new HomeController(
         $c->get(ProductMapper::class),
-        $c->get(CsrfTokenManager::class)
+        $c->get(CsrfTokenManager::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 
