@@ -13,6 +13,7 @@ use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
 use App\Controller\PostalCodeController;
 use App\Controller\PostController;
+use App\Controller\PostPageController;
 use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
 use App\Http\Request;
@@ -55,6 +56,8 @@ $adminOrders = $container->get(AdminOrderController::class);
 $adminUsers = $container->get(AdminUserController::class);
 /** @var PostController $postsController */
 $postsController = $container->get(PostController::class);
+/** @var PostPageController $postPageController */
+$postPageController = $container->get(PostPageController::class);
 /** @var SecurityController $securityController */
 $securityController = $container->get(SecurityController::class);
 /** @var PasswordResetController $passwordResetController */
@@ -69,7 +72,22 @@ $csrfTokens = $container->get(CsrfTokenManager::class);
 // ルート定義を外部から読み込む
 $routesFactory = require __DIR__ . '/../config/routes.php';
 
-$routes = $routesFactory($home, $order, $cart, $auth, $adminDashboard, $adminProducts, $adminOrders, $adminUsers, $postsController, $securityController, $passwordResetController, $productReviewController, $postalCodeController);
+$routes = $routesFactory(
+    $home,
+    $order,
+    $cart,
+    $auth,
+    $adminDashboard,
+    $adminProducts,
+    $adminOrders,
+    $adminUsers,
+    $postsController,
+    $securityController,
+    $passwordResetController,
+    $productReviewController,
+    $postalCodeController,
+    $postPageController,
+);
 
 // ルート解決
 $route = null;

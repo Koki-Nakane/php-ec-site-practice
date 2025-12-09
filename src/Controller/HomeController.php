@@ -49,12 +49,11 @@ final class HomeController
             </header>
             <section class="search-card">
                 <h2>ブログ記事をキーワード検索</h2>
-                <form id="post-search-form" class="search-form">
+                <form id="post-search-form" class="search-form" action="/posts/search" method="get">
                     <label for="post-search" class="visually-hidden">キーワード</label>
                     <input type="search" id="post-search" name="q" placeholder="例: セキュリティ 予約" aria-label="記事検索キーワード">
                     <button type="submit">検索</button>
                 </form>
-                <div id="post-search-result" class="search-result"></div>
             </section>
             <h1>商品一覧</h1>
             <?php if ($flash !== null): ?>
@@ -86,7 +85,6 @@ final class HomeController
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
-            <script src="/js/home-search.js" defer></script>
         </body>
         </html>
         <?php

@@ -63,12 +63,6 @@ body {
     background: #0a53be;
 }
 
-.search-result {
-    margin-top: 0.5rem;
-    font-size: 0.95rem;
-    color: #334155;
-}
-
 .product-list {
     list-style: none;
     padding: 0;

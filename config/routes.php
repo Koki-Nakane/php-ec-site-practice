@@ -13,6 +13,7 @@ use App\Controller\OrderController;
 use App\Controller\PasswordResetController;
 use App\Controller\PostalCodeController;
 use App\Controller\PostController;
+use App\Controller\PostPageController;
 use App\Controller\ProductReviewController;
 use App\Controller\SecurityController;
 use App\Http\Request;
@@ -36,6 +37,7 @@ return function (
     PasswordResetController $passwordReset,
     ProductReviewController $productReviews,
     PostalCodeController $postalCodes,
+    PostPageController $postPages,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
@@ -77,6 +79,9 @@ return function (
         ['POST', '/admin/users/update',     'web:admin', [$adminUsers, 'update']],
         ['POST', '/admin/users/toggle-admin',     'web:admin', [$adminUsers, 'toggleAdmin']],
         ['POST', '/admin/users/toggle-deletion',  'web:admin', [$adminUsers, 'toggleDeletion']],
+
+        // Post search page
+        ['GET', '/posts/search', 'web:public', [$postPages, 'search']],
 
         // Post API (Problem 42)
         ['GET', '/posts', 'api:public', [$posts, 'index']],
