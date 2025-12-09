@@ -33,11 +33,11 @@ return function (
     AdminOrderController $adminOrders,
     AdminUserController $adminUsers,
     PostController $posts,
-    PostPageController $postPages,
     SecurityController $security,
     PasswordResetController $passwordReset,
     ProductReviewController $productReviews,
     PostalCodeController $postalCodes,
+    PostPageController $postPages,
 ): array {
     return [
         ['GET',  '/',              'web:public', [$home, 'index']],
