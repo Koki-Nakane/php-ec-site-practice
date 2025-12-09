@@ -80,6 +80,10 @@ return function (
         ['POST', '/admin/users/toggle-admin',     'web:admin', [$adminUsers, 'toggleAdmin']],
         ['POST', '/admin/users/toggle-deletion',  'web:admin', [$adminUsers, 'toggleDeletion']],
 
+        // Post pages (Problem 49)
+        ['GET', '/blog', 'web:public', [$postPages, 'index']],
+        ['GET', '#^/blog/\d+$#', 'web:public', [$postPages, 'show'], true],
+
         // Post search page
         ['GET', '/posts/search', 'web:public', [$postPages, 'search']],
 

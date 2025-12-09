@@ -1,6 +1,5 @@
 <?php
 /** @var App\Model\Post[] $posts */
-/** @var string $query */
 /** @var int $page */
 /** @var int $perPage */
 /** @var int $total */
@@ -11,32 +10,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ブログ記事検索</title>
+    <title>ブログ記事一覧</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
     <link rel="stylesheet" href="/css/posts.css">
 </head>
 <body>
     <header class="page-header">
         <div class="back-link"><a href="/">&larr; トップへ戻る</a></div>
-        <h1>ブログ記事検索</h1>
+        <h1>ブログ記事一覧</h1>
+        <div class="header-actions"><a href="/posts/search">キーワード検索へ</a></div>
     </header>
 
-    <section class="search-box">
-        <form action="/posts/search" method="get" class="search-form">
-            <label for="q" class="visually-hidden">キーワード</label>
-            <input type="search" id="q" name="q" value="<?php echo htmlspecialchars($query, ENT_QUOTES, 'UTF-8'); ?>" placeholder="例: セキュリティ 予約">
-            <button type="submit">検索</button>
-        </form>
-    </section>
-
     <main class="results">
-        <?php if ($query === ''): ?>
-            <p class="muted">キーワードを入力して検索してください。</p>
-        <?php elseif ($total === 0): ?>
-            <p>「<?php echo htmlspecialchars($query, ENT_QUOTES, 'UTF-8'); ?>」に一致する記事は見つかりませんでした。</p>
+        <?php if ($total === 0): ?>
+            <p class="muted">まだ記事がありません。</p>
         <?php else: ?>
-            <p class="summary">「<?php echo htmlspecialchars($query, ENT_QUOTES, 'UTF-8'); ?>」の検索結果 <?php echo $total; ?> 件（<?php echo $page; ?> / <?php echo $totalPages; ?> ページ）</p>
-            <ol class="post-results">
+            <p class="summary">全 <?php echo $total; ?> 件（<?php echo $page; ?> / <?php echo $totalPages; ?> ページ）</p>
+            <ol class="post-results post-list">
                 <?php foreach ($posts as $post): ?>
                     <li class="post-card">
                         <h2>
@@ -55,24 +45,27 @@
                         </p>
                         <?php
                         $content = $post->getContent();
-                    $excerpt = mb_substr($content, 0, 160, 'UTF-8');
+                    $excerpt = mb_substr($content, 0, 200, 'UTF-8');
                     $hasMore = mb_strlen($content, 'UTF-8') > mb_strlen($excerpt, 'UTF-8');
                     ?>
-                        <p class="excerpt"><?php echo nl2br(htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8')); ?><?php if ($hasMore): ?>…<?php endif; ?></p>
+                        <p class="excerpt">
+                            <?php echo nl2br(htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8')); ?><?php if ($hasMore): ?>…<?php endif; ?>
+                        </p>
                         <p class="read-more"><a href="/blog/<?php echo $post->getId(); ?>">続きを読む</a></p>
                     </li>
                 <?php endforeach; ?>
             </ol>
 
             <?php if ($totalPages > 1): ?>
-                <nav class="pagination" aria-label="検索結果のページ切り替え">
+                <nav class="pagination" aria-label="記事一覧のページ切り替え">
                     <?php
-                    $buildUrl = function (int $targetPage) use ($query, $perPage): string {
-                        $params = ['q' => $query, 'page' => $targetPage];
+                    $buildUrl = function (int $targetPage) use ($perPage): string {
+                        $params = ['page' => $targetPage];
                         if ($perPage !== 10) {
                             $params['perPage'] = $perPage;
                         }
-                        return '/posts/search?' . http_build_query($params);
+                        $query = http_build_query($params);
+                        return $query === '' ? '/blog' : '/blog?' . $query;
                     };
                 ?>
                     <?php if ($page > 1): ?>
