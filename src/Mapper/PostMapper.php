@@ -274,8 +274,10 @@ final class PostMapper
         }
 
         if ($filter->getQuery() !== null) {
-            $conditions[] = '(p.title LIKE :keyword OR p.content LIKE :keyword)';
-            $params[':keyword'] = '%' . $filter->getQuery() . '%';
+            // Use ESCAPE '\\' so MySQL treats backslash as the escape character
+            $conditions[] = "(p.title LIKE :keyword_title ESCAPE '\\\\' OR p.content LIKE :keyword_content ESCAPE '\\\\')";
+            $params[':keyword_title'] = $this->buildLikePattern($filter->getQuery());
+            $params[':keyword_content'] = $params[':keyword_title'];
         }
 
         return $conditions === [] ? '' : ' WHERE ' . implode(' AND ', $conditions);
@@ -382,6 +384,13 @@ final class PostMapper
         }
 
         return $posts;
+    }
+
+    private function buildLikePattern(string $keyword): string
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $keyword);
+
+        return '%' . $escaped . '%';
     }
 
     /**
