@@ -274,8 +274,13 @@ final class PostMapper
         }
 
         if ($filter->getQuery() !== null) {
-            // Use ESCAPE '\\' so MySQL treats backslash as the escape character
-            $conditions[] = "(p.title LIKE :keyword_title ESCAPE '\\\\' OR p.content LIKE :keyword_content ESCAPE '\\\\')";
+            // Use ESCAPE '\\' so LIKE treats backslash as the escape character across drivers
+            $escape = '\\';
+            $conditions[] = sprintf(
+                "(p.title LIKE :keyword_title ESCAPE '%s' OR p.content LIKE :keyword_content ESCAPE '%s')",
+                $escape,
+                $escape
+            );
             $params[':keyword_title'] = $this->buildLikePattern($filter->getQuery());
             $params[':keyword_content'] = $params[':keyword_title'];
         }

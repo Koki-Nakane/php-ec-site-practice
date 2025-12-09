@@ -40,7 +40,7 @@ final class HomeControllerTest extends TestCase
         $this->assertSame(200, $response->status);
         $this->assertStringContainsString('id="post-search-form"', $response->body);
         $this->assertStringContainsString('name="q"', $response->body);
-        $this->assertStringContainsString('/posts?q=', $response->body);
+        $this->assertStringContainsString('action="/posts/search"', $response->body);
     }
 
     private function createProductSchema(PDO $pdo): void
