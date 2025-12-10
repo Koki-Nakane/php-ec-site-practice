@@ -152,14 +152,16 @@ $container->set(AuthController::class, function (ContainerInterface $c): AuthCon
     return new AuthController(
         $c->get(UserMapper::class),
         $c->get(CsrfTokenManager::class),
-        $c->get(PasswordValidator::class)
+        $c->get(PasswordValidator::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 
 $container->set(HomeController::class, function (ContainerInterface $c): HomeController {
     return new HomeController(
         $c->get(ProductMapper::class),
-        $c->get(CsrfTokenManager::class)
+        $c->get(CsrfTokenManager::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 
@@ -170,13 +172,15 @@ $container->set(OrderController::class, function (ContainerInterface $c): OrderC
         $c->get(ProductMapper::class),
         $c->get(OrderMapper::class),
         $c->get(OrderCsvExporter::class),
-        $c->get(CsrfTokenManager::class)
+        $c->get(CsrfTokenManager::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 
 $container->set(CartController::class, function (ContainerInterface $c): CartController {
     return new CartController(
-        $c->get(ProductMapper::class)
+        $c->get(ProductMapper::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 
@@ -237,7 +241,8 @@ $container->set(PasswordResetController::class, function (ContainerInterface $c)
         $c->get(UserMapper::class),
         $c->get(CsrfTokenManager::class),
         $c->get(PasswordResetService::class),
-        $c->get(PasswordValidator::class)
+        $c->get(PasswordValidator::class),
+        $c->get(TemplateRenderer::class)
     );
 }, shared: true);
 

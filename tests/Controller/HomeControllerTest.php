@@ -8,6 +8,7 @@ use App\Controller\HomeController;
 use App\Http\Request;
 use App\Mapper\ProductMapper;
 use App\Service\CsrfTokenManager;
+use App\Service\TemplateRenderer;
 use DateTimeImmutable;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +35,8 @@ final class HomeControllerTest extends TestCase
         $this->seedProduct($this->pdo);
 
         $products = new ProductMapper($this->pdo);
-        $controller = new HomeController($products, $this->csrf);
+        $views = new TemplateRenderer(__DIR__ . '/../../views');
+        $controller = new HomeController($products, $this->csrf, $views);
         $response = $controller->index(new Request('GET', '/'));
 
         $this->assertSame(200, $response->status);

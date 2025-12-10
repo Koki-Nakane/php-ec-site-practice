@@ -37,7 +37,12 @@ final class PostPageControllerTest extends TestCase
         $this->seedPosts();
 
         $views = new TemplateRenderer(__DIR__ . '/../../views');
-        $auth = new AuthController(new UserMapper($this->pdo), new CsrfTokenManager(), new PasswordValidator());
+        $auth = new AuthController(
+            new UserMapper($this->pdo),
+            new CsrfTokenManager(),
+            new PasswordValidator(),
+            $views
+        );
         $this->controller = new PostPageController(new PostMapper($this->pdo), $views, $auth);
     }
 

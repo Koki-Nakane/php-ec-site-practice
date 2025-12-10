@@ -10,6 +10,7 @@ use App\Mapper\UserMapper;
 use App\Service\CsrfTokenManager;
 use App\Service\PasswordResetService;
 use App\Service\PasswordValidator;
+use App\Service\TemplateRenderer;
 
 final class PasswordResetController
 {
@@ -18,6 +19,7 @@ final class PasswordResetController
         private CsrfTokenManager $csrfTokens,
         private PasswordResetService $passwordResets,
         private PasswordValidator $passwordValidator,
+        private TemplateRenderer $views,
     ) {
     }
 
@@ -55,23 +57,8 @@ final class PasswordResetController
 
     public function showRequestSent(Request $request): Response
     {
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <title>パスワード再設定メールを送信しました</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body>
-            <h1>パスワード再設定メールを送信しました</h1>
-            <p>入力いただいたメールアドレス宛に、再設定用リンクを送信しました。メールに記載された手順に従ってください。</p>
-            <p><a href="/login">ログイン画面に戻る</a></p>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('auth/password_request_sent.php');
+
         return new Response(200, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
@@ -120,23 +107,8 @@ final class PasswordResetController
 
     public function showResetComplete(Request $request): Response
     {
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <title>パスワードを変更しました</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body>
-            <h1>パスワードを変更しました</h1>
-            <p>新しいパスワードでログインできます。</p>
-            <p><a href="/login">ログイン画面へ</a></p>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('auth/password_reset_complete.php');
+
         return new Response(200, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
@@ -144,42 +116,12 @@ final class PasswordResetController
     {
         $csrfToken = $this->csrfTokens->issue('web');
 
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <title>パスワード再設定</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body>
-            <h1>パスワード再設定</h1>
-            <p>登録済みのメールアドレスを入力すると、再設定用リンクを送信します。</p>
-            <?php if ($errors !== []): ?>
-                <div style="color:#b00;">
-                    <ul>
-                        <?php foreach ($errors as $error): ?>
-                            <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            <form method="post" action="/password/forgot">
-                <input type="hidden" name="_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                <label>
-                    メールアドレス
-                    <input type="email" name="email" required value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>">
-                </label>
-                <div style="margin-top:1rem;">
-                    <button type="submit">再設定リンクを送信</button>
-                </div>
-            </form>
-            <p style="margin-top:1rem;"><a href="/login">ログイン画面に戻る</a></p>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('auth/password_request.php', [
+            'csrfToken' => $csrfToken,
+            'email' => $email,
+            'errors' => $errors,
+        ]);
+
         return new Response($status, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
@@ -187,68 +129,20 @@ final class PasswordResetController
     {
         $csrfToken = $this->csrfTokens->issue('web');
 
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <title>新しいパスワードを設定</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body>
-            <h1>新しいパスワードを設定</h1>
-            <?php if ($errors !== []): ?>
-                <div style="color:#b00;">
-                    <ul>
-                        <?php foreach ($errors as $error): ?>
-                            <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            <form method="post" action="/password/reset">
-                <input type="hidden" name="_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
-                <label>
-                    新しいパスワード
-                    <input type="password" name="password" required minlength="8">
-                </label>
-                <label>
-                    新しいパスワード（確認用）
-                    <input type="password" name="password_confirmation" required minlength="8">
-                </label>
-                <p>英大文字・英小文字・数字・記号のうち2種類以上を含めてください。</p>
-                <div style="margin-top:1rem;">
-                    <button type="submit">パスワードを変更する</button>
-                </div>
-            </form>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('auth/password_reset.php', [
+            'csrfToken' => $csrfToken,
+            'token' => $token,
+            'errors' => $errors,
+            'passwordPolicy' => $this->passwordValidator->getPolicyDescription(),
+        ]);
+
         return new Response($status, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
     private function renderInvalidToken(): Response
     {
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <title>リンクが無効です</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body>
-            <h1>リンクが無効か期限切れです</h1>
-            <p>お手数ですが、もう一度パスワード再設定を申請してください。</p>
-            <p><a href="/password/forgot">再設定リンクを申請する</a></p>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('auth/password_invalid_token.php');
+
         return new Response(410, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
