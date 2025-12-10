@@ -15,6 +15,7 @@ use App\Model\Order;
 use App\Service\CsrfTokenManager;
 use App\Service\Exception\NoOrdersForExportException;
 use App\Service\OrderCsvExporter;
+use App\Service\TemplateRenderer;
 use DateInterval;
 use DateTimeImmutable;
 
@@ -27,6 +28,7 @@ final class OrderController
         private OrderMapper $orders,
         private OrderCsvExporter $csvExporter,
         private CsrfTokenManager $csrfTokens,
+        private TemplateRenderer $views,
     ) {
     }
 
@@ -46,55 +48,14 @@ final class OrderController
         $user = $userId ? $this->users->find((int)$userId) : null;
 
         $csrfToken = $this->csrfTokens->issue('place_order');
+        $html = $this->views->render('order/checkout.php', [
+            'cartItems' => $cart->getItems(),
+            'totalPrice' => $cart->getTotalPrice(),
+            'userName' => $user?->getName() ?? '',
+            'userAddress' => $user?->getAddress() ?? '',
+            'csrfToken' => $csrfToken,
+        ]);
 
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>注文確認</title>
-        </head>
-        <body>
-            <h1>注文内容の確認</h1>
-
-            <h2>お届け先情報</h2>
-            <p>お名前: <?php echo htmlspecialchars($user?->getName() ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
-            <p>ご住所: <?php echo htmlspecialchars($user?->getAddress() ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
-
-            <h2>ご注文商品</h2>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>価格</th>
-                        <th>数量</th>
-                        <th>小計</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($cart->getItems() as $item): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($item['product']->getName(), ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars((string)$item['product']->getPrice(), ENT_QUOTES, 'UTF-8'); ?>円</td>
-                            <td><?php echo htmlspecialchars((string)$item['quantity'], ENT_QUOTES, 'UTF-8'); ?>個</td>
-                            <td><?php echo htmlspecialchars((string)($item['product']->getPrice() * $item['quantity']), ENT_QUOTES, 'UTF-8'); ?>円</td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <h3>合計金額: <?php echo htmlspecialchars((string)$cart->getTotalPrice(), ENT_QUOTES, 'UTF-8'); ?>円</h3>
-
-            <form action="/place_order" method="post">
-                <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                <button type="submit">この内容で注文を確定する</button>
-            </form>
-
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
         return new Response(200, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
@@ -136,24 +97,8 @@ final class OrderController
 
     public function orderComplete(Request $request): Response
     {
-        ob_start();
-        ?>
-                <!DOCTYPE html>
-                <html lang="ja">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>ご注文完了</title>
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-                </head>
-                <body>
-                    <h1>ご注文ありがとうございました！</h1>
-                    <p>ご注文が正常に完了しました。</p>
-                    <p><a href="/">トップへ戻る</a></p>
-                </body>
-                </html>
-                <?php
-        $html = (string) ob_get_clean();
+        $html = $this->views->render('order/complete.php');
+
         return new Response(200, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
@@ -179,80 +124,13 @@ final class OrderController
 
         $csrfToken = $this->csrfTokens->issue('orders_export');
 
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>注文履歴</title>
-            <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-            <style>
-                body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; margin: 2rem; }
-                form { margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: flex-end; }
-                label { display: grid; gap: .25rem; }
-                input[type="month"] { padding: .35rem .5rem; }
-                button { padding: .45rem .9rem; border: 0; border-radius: 4px; background: #0b5ed7; color: #fff; cursor: pointer; }
-                button:hover { background: #0a53be; }
-                table { border-collapse: collapse; width: 100%; max-width: 960px; }
-                th, td { border: 1px solid #ccc; padding: .5rem .75rem; text-align: left; }
-                th { background: #f7f7f7; }
-                .flash { background: #fee; color: #b00; border: 1px solid #fbb; padding: .75rem 1rem; margin-bottom: 1rem; border-radius: 6px; }
-            </style>
-        </head>
-        <body>
-            <h1>注文履歴</h1>
+        $html = $this->views->render('order/list.php', [
+            'flash' => $flash,
+            'currentMonthString' => $currentMonthString,
+            'orders' => $orders,
+            'csrfToken' => $csrfToken,
+        ]);
 
-            <?php if ($flash !== null): ?>
-                <div class="flash"><?php echo htmlspecialchars($flash, ENT_QUOTES, 'UTF-8'); ?></div>
-            <?php endif; ?>
-
-            <form action="/orders/export" method="post">
-                <label>
-                    対象月
-                    <input type="month" name="month" value="<?php echo htmlspecialchars($currentMonthString, ENT_QUOTES, 'UTF-8'); ?>" max="<?php echo htmlspecialchars($currentMonthString, ENT_QUOTES, 'UTF-8'); ?>">
-                </label>
-                <input type="hidden" name="_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                <button type="submit">CSVをダウンロード</button>
-            </form>
-
-            <?php if (empty($orders)): ?>
-                <p>今月のご注文はまだありません。</p>
-            <?php else: ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>注文ID</th>
-                            <th>注文日時</th>
-                            <th>ステータス</th>
-                            <th>合計金額</th>
-                            <th>商品一覧</th>
-                            <th>配送先</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($orders as $order): ?>
-                            <?php $items = []; ?>
-                            <?php foreach ($order->getCartItems() as $item): ?>
-                                <?php $items[] = sprintf('%s×%d', $item['product']->getName(), $item['quantity']); ?>
-                            <?php endforeach; ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars((string)$order->getId(), ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo htmlspecialchars($order->getDate()->format('Y-m-d H:i:s'), ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo htmlspecialchars(OrderStatus::label($order->getStatus()), ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo htmlspecialchars((string)$order->getTotalPrice(), ENT_QUOTES, 'UTF-8'); ?>円</td>
-                                <td><?php echo htmlspecialchars(implode('; ', $items), ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo nl2br(htmlspecialchars($order->getShippingAddress(), ENT_QUOTES, 'UTF-8')); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </body>
-        </html>
-        <?php
-        $html = (string) ob_get_clean();
         return new Response(200, $html, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
