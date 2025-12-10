@@ -10,7 +10,6 @@ use App\Mapper\OrderMapper;
 use App\Mapper\ProductMapper;
 use App\Mapper\UserMapper;
 use App\Model\Cart;
-use App\Model\Enum\OrderStatus;
 use App\Model\Order;
 use App\Service\CsrfTokenManager;
 use App\Service\Exception\NoOrdersForExportException;

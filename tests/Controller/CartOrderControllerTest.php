@@ -8,14 +8,11 @@ use App\Controller\CartController;
 use App\Controller\OrderController;
 use App\Http\Request;
 use App\Model\Cart;
-use App\Model\Order;
 use App\Model\Product;
 use App\Model\User;
 use App\Service\CsrfTokenManager;
 use App\Service\OrderCsvExporter;
 use App\Service\TemplateRenderer;
-use DateInterval;
-use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class CartOrderControllerTest extends TestCase
@@ -146,9 +143,18 @@ class FakePdo extends \PDO
         return $this->lastStatement;
     }
 
-    public function beginTransaction(): bool { return true; }
-    public function commit(): bool { return true; }
-    public function rollBack(): bool { return true; }
+    public function beginTransaction(): bool
+    {
+        return true;
+    }
+    public function commit(): bool
+    {
+        return true;
+    }
+    public function rollBack(): bool
+    {
+        return true;
+    }
 }
 
 class FakeStatement extends \PDOStatement

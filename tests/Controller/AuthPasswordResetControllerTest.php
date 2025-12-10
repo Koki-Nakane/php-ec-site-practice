@@ -126,9 +126,18 @@ class AuthFakePdo extends \PDO
         return new AuthFakeStatement();
     }
 
-    public function beginTransaction(): bool { return true; }
-    public function commit(): bool { return true; }
-    public function rollBack(): bool { return true; }
+    public function beginTransaction(): bool
+    {
+        return true;
+    }
+    public function commit(): bool
+    {
+        return true;
+    }
+    public function rollBack(): bool
+    {
+        return true;
+    }
 }
 
 class AuthFakeStatement extends \PDOStatement

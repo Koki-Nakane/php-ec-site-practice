@@ -5,6 +5,7 @@
 /** @var string $csrfToken */
 
 use App\Model\Enum\OrderStatus;
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
